@@ -5,14 +5,24 @@
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
+    "dev:app": "vite",
     "start": "wrangler dev",
+    "build": "tsc -b && vite build",
     "cf-typegen": "wrangler types",
     "check": "biome check --write"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@cloudflare/workers-types": "^4.20241230.0",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "^4.3.4",
     "typescript": "^5.5.2",
+    "vite": "^6.0.7",
     "wrangler": "^3.60.3"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   }
 }

@@ -1,6 +1,6 @@
 #:schema node_modules/wrangler/config-schema.json
 name = "watchlist"
-main = "server/index.ts"
+main = "worker/index.ts"
 compatibility_date = "2024-12-30"
 
 # Workers Logs
