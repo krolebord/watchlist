@@ -7,7 +7,7 @@
     "dev": "wrangler dev",
     "start": "wrangler dev",
     "cf-typegen": "wrangler types",
-		"check": "biome check --write"
+    "check": "biome check --write"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
