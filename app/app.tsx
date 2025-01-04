@@ -1,11 +1,12 @@
 import { useState } from "react";
 
-export function App() {
+export function App({ message }: { message: string }) {
   const [count, setCount] = useState(0);
 
   return (
     <>
       <h1>Vite + React</h1>
+      <p>{message}</p>
       <div className="card">
         <button type="button" onClick={() => setCount((count) => count + 1)}>
           count is {count}
