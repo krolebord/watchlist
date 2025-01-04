@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Link, Outlet, createRootRoute } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
@@ -12,8 +13,12 @@ function Root() {
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
         <div>
-          <Link to="/">Home</Link>
-          <Link to="/about">About</Link>
+          <Button asChild>
+            <Link to="/">Home</Link>
+          </Button>
+          <Button asChild>
+            <Link to="/about">About</Link>
+          </Button>
         </div>
         <Outlet />
         {import.meta.env.DEV && <TanStackRouterDevtools />}
