@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 
-export class MyDurableObject extends DurableObject {
+export class ListDurableObject extends DurableObject {
   // biome-ignore lint/complexity/noUselessConstructor: <explanation>
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);

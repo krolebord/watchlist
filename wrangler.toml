@@ -13,9 +13,18 @@ mode = "smart"
 MODE = "production"
 
 [[durable_objects.bindings]]
-name = "MY_DURABLE_OBJECT"
-class_name = "MyDurableObject"
+name = "LIST_DURABLE_OBJECT"
+class_name = "ListDurableObject"
 
 [[migrations]]
 tag = "v1"
-new_classes = ["MyDurableObject"]
+new_sqlite_classes = ["ListDurableObject"]
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+html_handling = "auto-trailing-slash"
+not_found_handling = "single-page-application"
+
+[build]
+command = "pnpm run build"

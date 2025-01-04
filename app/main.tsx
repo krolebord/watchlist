@@ -6,12 +6,14 @@ import "./index.css";
 
 const rootElement = document.getElementById("root");
 
-const resp = await fetch("/api/hello");
-
-if (rootElement) {
-  createRoot(rootElement).render(
-    <StrictMode>
-      <App message={await resp.text()} />
-    </StrictMode>
-  );
-}
+fetch("/api/hello")
+  .then((resp) => resp.text())
+  .then((text) => {
+    if (rootElement) {
+      createRoot(rootElement).render(
+        <StrictMode>
+          <App message={text} />
+        </StrictMode>
+      );
+    }
+  });
