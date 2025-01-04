@@ -1,72 +1,45 @@
+import { MovieCard } from '@/components/movie-card';
 import { Input } from '@/components/ui/input';
 import { trpc } from '@/trpc';
 import { useThrottle } from '@/utils/use-throttle';
+import autoAnimate from '@formkit/auto-animate';
+import { keepPreviousData } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
-import type { MovieWithMediaType, TVWithMediaType } from 'tmdb-ts';
+import { AnimatePresence } from 'motion/react';
+import { useEffect, useRef, useState } from 'react';
 
 export const Route = createFileRoute('/')({
   component: Index,
 });
 
 function Index() {
-  useEffect(() => {
-    console.log('mount');
-  }, []);
   const [search, setSearch] = useState('');
-  const searchQuery = useThrottle(search, 500);
+  const searchQuery = useThrottle(search, 200);
 
   const { data } = trpc.findMovie.useQuery(
     { q: searchQuery },
     {
       enabled: !!searchQuery,
+      placeholderData: keepPreviousData,
     },
   );
+
+  const parentRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (parentRef.current) {
+      autoAnimate(parentRef.current);
+    }
+  }, []);
 
   return (
     <div className="p-2">
       <h3>Welcome Home!</h3>
       <Input placeholder="Search for a movie" onChange={(e) => setSearch(e.target.value)} />
-      {data?.map((result) => (
-        <MovieCard key={result.id} movie={adaptSearchResult(result)} />
-      ))}
-    </div>
-  );
-}
-
-function adaptSearchResult(result: MovieWithMediaType | TVWithMediaType) {
-  if (result.media_type === 'tv') {
-    return {
-      title: result.name,
-      tmdbId: result.id,
-      posterPath: result.poster_path,
-      releaseDate: result.first_air_date,
-      overview: result.overview,
-      popularity: result.popularity,
-      voteAverage: result.vote_average,
-      voteCount: result.vote_count,
-    };
-  }
-
-  return {
-    title: result.title,
-    tmdbId: result.id,
-    posterPath: result.poster_path,
-    releaseDate: result.release_date,
-    overview: result.overview,
-    popularity: result.popularity,
-    voteAverage: result.vote_average,
-    voteCount: result.vote_count,
-  };
-}
-
-type Movie = ReturnType<typeof adaptSearchResult>;
-
-function MovieCard({ movie }: { movie: Movie }) {
-  return (
-    <div>
-      <img className="rounded-md" src={`https://image.tmdb.org/t/p/w500${movie.posterPath}`} alt={movie.title} />
-      <div>{movie.title}</div>
+      <div ref={parentRef}>
+        {data?.map((result) => (
+          <MovieCard key={result.tmdbId} movie={result} />
+        ))}
+      </div>
     </div>
   );
 }
