@@ -1,6 +1,7 @@
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import { Server } from 'partyserver';
-import { createContext, listRouter } from './router';
+import { listRouter } from './router';
+import { createContext } from './trpc';
 
 export class ListDurableObject extends Server {
   async sayHello(name: string): Promise<string> {
@@ -12,7 +13,7 @@ export class ListDurableObject extends Server {
       endpoint: '/api/trpc',
       req: request,
       router: listRouter,
-      createContext: createContext,
+      createContext: ({ req, resHeaders, info }) => createContext({ req, resHeaders, info, env: this.env as Env }),
     });
   }
 }

@@ -44,10 +44,12 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.469.0",
     "partyserver": "^0.0.59",
+    "partysocket": "^1.0.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
+    "tmdb-ts": "^2.0.1",
     "zod": "^3.24.1"
   }
 }

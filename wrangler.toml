@@ -15,6 +15,9 @@ mode = "smart"
 [vars]
 MODE = "production"
 
+[version_metadata]
+binding = "METADATA"
+
 [[durable_objects.bindings]]
 name = "LIST_DO"
 class_name = "ListDurableObject"

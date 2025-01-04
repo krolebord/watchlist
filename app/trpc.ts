@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
-import { createTRPCClient, httpBatchLink } from '@trpc/client';
+import { httpBatchLink } from '@trpc/client';
 import { createTRPCQueryUtils, createTRPCReact } from '@trpc/react-query';
 import type { ListRouter } from '../worker';
 

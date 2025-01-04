@@ -56,6 +56,9 @@ importers:
       partyserver:
         specifier: ^0.0.59
         version: 0.0.59(@cloudflare/workers-types@4.20241230.0)
+      partysocket:
+        specifier: ^1.0.3
+        version: 1.0.3
       react:
         specifier: ^19.0.0
         version: 19.0.0
@@ -68,6 +71,9 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.17)
+      tmdb-ts:
+        specifier: ^2.0.1
+        version: 2.0.1
       zod:
         specifier: ^3.24.1
         version: 3.24.1
@@ -1485,6 +1491,9 @@ packages:
     resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
 
+  cross-fetch@4.1.0:
+    resolution: {integrity: sha512-uKm5PU+MHTootlWEY+mZ4vvXoCn4fLQxT9dSc1sXVMSFkINTJVN8cAQROpwcKm8bJ/c7rgZVIBWzH5T78sNZZw==}
+
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
@@ -1561,6 +1570,10 @@ packages:
 
   estree-walker@0.6.1:
     resolution: {integrity: sha512-SqmZANLWS0mnatqbSfRP5g8OXZC12Fgg1IwNtLsyHDzJizORW4khDfjPqJZsemPWBB2uqykUah5YpQ6epsqC/w==}
+
+  event-target-shim@6.0.2:
+    resolution: {integrity: sha512-8q3LsZjRezbFZ2PN+uP+Q7pnHUMmAOziU2vA2OwoFaKIXxlxl38IylhSSgUorWu/rf4er67w0ikBqjBFk/pomA==}
+    engines: {node: '>=10.13.0'}
 
   exit-hook@2.2.1:
     resolution: {integrity: sha512-eNTPlAD67BmP31LDINZ3U7HSF8l57TxOY2PmBJ1shpCvpnxBF93mWCE8YHBnXs8qiUZJc9WDcWIeC3a2HIAMfw==}
@@ -1751,6 +1764,15 @@ packages:
     engines: {node: ^18 || >=20}
     hasBin: true
 
+  node-fetch@2.7.0:
+    resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
+    engines: {node: 4.x || >=6.0.0}
+    peerDependencies:
+      encoding: ^0.1.0
+    peerDependenciesMeta:
+      encoding:
+        optional: true
+
   node-forge@1.3.1:
     resolution: {integrity: sha512-dPEtOeMvF9VMcYV/1Wb8CPoVAXtp6MKMlcbAt4ddqmGqUJ6fQZFXkNZNkNlfevtNkGtaSoXf/vNNNSvgrdXwtA==}
     engines: {node: '>= 6.13.0'}
@@ -1784,6 +1806,9 @@ packages:
     resolution: {integrity: sha512-0jhCOK1jufbGKBQL5TbokdZYHWi7gSS1uhX+HXtoFucXGtDxMGR94+yJF24o+Pba75YosuRiuePvvN2JETWpXw==}
     peerDependencies:
       '@cloudflare/workers-types': ^4.20240729.0
+
+  partysocket@1.0.3:
+    resolution: {integrity: sha512-7sSojS4oCRK1Fe1h+Sa0Za5dwOf+M9VksQlynD8yqwGpLvnO4oxx9ppmOSeh6CJTMbF5gbnvUQKMK525QSBdBw==}
 
   path-key@3.1.1:
     resolution: {integrity: sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==}
@@ -2046,9 +2071,15 @@ packages:
   tiny-warning@1.0.3:
     resolution: {integrity: sha512-lBN9zLN/oAf68o3zNXYrdCt1kP8WsiGW8Oo2ka41b2IM5JL/S1CTyX1rW0mb/zSuJun0ZUrDxx4sqvYS2FWzPA==}
 
+  tmdb-ts@2.0.1:
+    resolution: {integrity: sha512-T3OnICnxOARYPrRoTuuPpmaoQ1mUL5AgWz3N5RT1WjLmlNA4h0H+j2yho3KTp4tm8V6sfwJRbzQaSCwGIzxuRQ==}
+
   to-regex-range@5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
+
+  tr46@0.0.3:
+    resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
 
   ts-interface-checker@0.1.13:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
@@ -2157,8 +2188,14 @@ packages:
       yaml:
         optional: true
 
+  webidl-conversions@3.0.1:
+    resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
+
   webpack-virtual-modules@0.6.2:
     resolution: {integrity: sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==}
+
+  whatwg-url@5.0.0:
+    resolution: {integrity: sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==}
 
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
@@ -3353,6 +3390,12 @@ snapshots:
 
   cookie@0.7.2: {}
 
+  cross-fetch@4.1.0:
+    dependencies:
+      node-fetch: 2.7.0
+    transitivePeerDependencies:
+      - encoding
+
   cross-spawn@7.0.6:
     dependencies:
       path-key: 3.1.1
@@ -3472,6 +3515,8 @@ snapshots:
   escape-string-regexp@4.0.0: {}
 
   estree-walker@0.6.1: {}
+
+  event-target-shim@6.0.2: {}
 
   exit-hook@2.2.1: {}
 
@@ -3647,6 +3692,10 @@ snapshots:
 
   nanoid@5.0.9: {}
 
+  node-fetch@2.7.0:
+    dependencies:
+      whatwg-url: 5.0.0
+
   node-forge@1.3.1: {}
 
   node-releases@2.0.19: {}
@@ -3667,6 +3716,10 @@ snapshots:
     dependencies:
       '@cloudflare/workers-types': 4.20241230.0
       nanoid: 5.0.9
+
+  partysocket@1.0.3:
+    dependencies:
+      event-target-shim: 6.0.2
 
   path-key@3.1.1: {}
 
@@ -3938,9 +3991,17 @@ snapshots:
 
   tiny-warning@1.0.3: {}
 
+  tmdb-ts@2.0.1:
+    dependencies:
+      cross-fetch: 4.1.0
+    transitivePeerDependencies:
+      - encoding
+
   to-regex-range@5.0.1:
     dependencies:
       is-number: 7.0.0
+
+  tr46@0.0.3: {}
 
   ts-interface-checker@0.1.13: {}
 
@@ -4014,7 +4075,14 @@ snapshots:
       tsx: 4.19.2
       yaml: 2.7.0
 
+  webidl-conversions@3.0.1: {}
+
   webpack-virtual-modules@0.6.2: {}
+
+  whatwg-url@5.0.0:
+    dependencies:
+      tr46: 0.0.3
+      webidl-conversions: 3.0.1
 
   which@2.0.2:
     dependencies:

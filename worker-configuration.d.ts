@@ -3,6 +3,8 @@
 interface Env {
   LIST_KV: KVNamespace;
   MODE: string;
+  TMDB_READ_ACCESS_TOKEN: string;
+  TMDB_API_KEY: string;
   LIST_DO: DurableObjectNamespace<import('./worker/index').ListDurableObject>;
   METADATA: { id: string; tag: string };
   ASSETS: Fetcher;

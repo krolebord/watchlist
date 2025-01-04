@@ -16,7 +16,6 @@ export default {
   async fetch(request, env, ctx): Promise<Response> {
     const pathname = new URL(request.url).pathname;
 
-    console.log(pathname);
     if (pathname.startsWith('/api')) {
       const stub = await getServerByName(env.LIST_DO, 'singleton');
       const resp = await stub.fetch(request);

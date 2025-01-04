@@ -9,7 +9,6 @@ export const Route = createFileRoute('/about')({
     return { time: new Date().toString() };
   },
   loader: async ({ deps }) => {
-    await wait(5000);
     return trpcUtils.greet.ensureData(deps.time);
   },
 });
