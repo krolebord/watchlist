@@ -172,4 +172,4 @@ dist
 .wrangler/
 
 *.tsbuildinfo
-app/routeTree.gen.ts
+src/routeTree.gen.ts

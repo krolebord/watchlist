@@ -5,10 +5,10 @@ import { defineConfig } from 'vite';
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [TanStackRouterVite({ routesDirectory: 'app/routes', generatedRouteTree: 'app/routeTree.gen.ts' }), react()],
+  plugins: [TanStackRouterVite(), react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './app'),
+      '@': path.resolve(__dirname, './src'),
     },
   },
   server: {

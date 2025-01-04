@@ -18,8 +18,8 @@
     "types": ["@cloudflare/workers-types/2023-07-01", "@types/node"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./app/*"]
+      "@/*": ["./src/*"]
     }
   },
-  "include": ["app", "worker-configuration.d.ts"]
+  "include": ["src", "worker-configuration.d.ts"]
 }
