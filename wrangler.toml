@@ -2,6 +2,9 @@
 name = "watchlist"
 main = "worker/index.ts"
 compatibility_date = "2024-12-30"
+compatibility_flags = ["nodejs_als"]
+
+limits.cpu_ms = 500
 
 [observability]
 enabled = true
@@ -13,12 +16,12 @@ mode = "smart"
 MODE = "production"
 
 [[durable_objects.bindings]]
-name = "LIST_DURABLE_OBJECT"
+name = "LIST_DO"
 class_name = "ListDurableObject"
 
-[[migrations]]
-tag = "v1"
-new_sqlite_classes = ["ListDurableObject"]
+[[kv_namespaces]]
+id = "d66e3b0d7bb04642b3f33a1f72c9ae79"
+binding = "LIST_KV"
 
 [assets]
 directory = "./dist"
@@ -26,5 +29,6 @@ binding = "ASSETS"
 html_handling = "auto-trailing-slash"
 not_found_handling = "single-page-application"
 
-[build]
-command = "pnpm run build"
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["ListDurableObject"]

@@ -8,12 +8,24 @@ importers:
 
   .:
     dependencies:
+      '@trpc/client':
+        specifier: 11.0.0-rc.682
+        version: 11.0.0-rc.682(@trpc/server@11.0.0-rc.682(typescript@5.7.2))(typescript@5.7.2)
+      '@trpc/server':
+        specifier: 11.0.0-rc.682
+        version: 11.0.0-rc.682(typescript@5.7.2)
+      partyserver:
+        specifier: ^0.0.59
+        version: 0.0.59(@cloudflare/workers-types@4.20241230.0)
       react:
         specifier: ^19.0.0
         version: 19.0.0
       react-dom:
         specifier: ^19.0.0
         version: 19.0.0(react@19.0.0)
+      zod:
+        specifier: ^3.24.1
+        version: 3.24.1
     devDependencies:
       '@biomejs/biome':
         specifier: 1.9.4
@@ -21,6 +33,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^4.20241230.0
         version: 4.20241230.0
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.10.5
       '@types/react':
         specifier: ^19.0.2
         version: 19.0.2
@@ -31,7 +46,7 @@ importers:
         specifier: ^4.3.4
         version: 4.3.4(vite@6.0.7(@types/node@22.10.5))
       typescript:
-        specifier: ^5.5.2
+        specifier: ^5.7.2
         version: 5.7.2
       vite:
         specifier: ^6.0.7
@@ -631,6 +646,17 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@trpc/client@11.0.0-rc.682':
+    resolution: {integrity: sha512-zfM6t4tkbQPm/FHK85jcJjJle7FJTj9U8t/ieDzIe3X6DNo66sg6KqQpjkeTJcaj5u2hga1lmv3rc4uob/7D0g==}
+    peerDependencies:
+      '@trpc/server': 11.0.0-rc.682+8650a22e8
+      typescript: '>=5.7.2'
+
+  '@trpc/server@11.0.0-rc.682':
+    resolution: {integrity: sha512-y8FhLW/UJ8SOyHByvSQW7WvCnbvYioOYhviWD+sRvqkB9f0O8/sEBPJt1mBadWaO/0tygOghkeNC9o1wAsJ8cg==}
+    peerDependencies:
+      typescript: '>=5.7.2'
+
   '@types/babel__core@7.20.5':
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
 
@@ -826,6 +852,11 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
+  nanoid@5.0.9:
+    resolution: {integrity: sha512-Aooyr6MXU6HpvvWXKoVoXwKMs/KyVakWwg7xQfv5/S/RIgJMy0Ifa45H9qqYy7pTCszrHzP21Uk4PZq2HpEM8Q==}
+    engines: {node: ^18 || >=20}
+    hasBin: true
+
   node-forge@1.3.1:
     resolution: {integrity: sha512-dPEtOeMvF9VMcYV/1Wb8CPoVAXtp6MKMlcbAt4ddqmGqUJ6fQZFXkNZNkNlfevtNkGtaSoXf/vNNNSvgrdXwtA==}
     engines: {node: '>= 6.13.0'}
@@ -835,6 +866,11 @@ packages:
 
   ohash@1.1.4:
     resolution: {integrity: sha512-FlDryZAahJmEF3VR3w1KogSEdWX3WhA5GPakFx4J81kEAiHyLMpdLLElS8n8dfNadMgAne/MywcvmogzscVt4g==}
+
+  partyserver@0.0.59:
+    resolution: {integrity: sha512-0jhCOK1jufbGKBQL5TbokdZYHWi7gSS1uhX+HXtoFucXGtDxMGR94+yJF24o+Pba75YosuRiuePvvN2JETWpXw==}
+    peerDependencies:
+      '@cloudflare/workers-types': ^4.20240729.0
 
   path-parse@1.0.7:
     resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==}
@@ -1441,6 +1477,15 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.29.1':
     optional: true
 
+  '@trpc/client@11.0.0-rc.682(@trpc/server@11.0.0-rc.682(typescript@5.7.2))(typescript@5.7.2)':
+    dependencies:
+      '@trpc/server': 11.0.0-rc.682(typescript@5.7.2)
+      typescript: 5.7.2
+
+  '@trpc/server@11.0.0-rc.682(typescript@5.7.2)':
+    dependencies:
+      typescript: 5.7.2
+
   '@types/babel__core@7.20.5':
     dependencies:
       '@babel/parser': 7.26.3
@@ -1669,11 +1714,18 @@ snapshots:
 
   nanoid@3.3.8: {}
 
+  nanoid@5.0.9: {}
+
   node-forge@1.3.1: {}
 
   node-releases@2.0.19: {}
 
   ohash@1.1.4: {}
+
+  partyserver@0.0.59(@cloudflare/workers-types@4.20241230.0):
+    dependencies:
+      '@cloudflare/workers-types': 4.20241230.0
+      nanoid: 5.0.9
 
   path-parse@1.0.7: {}
 

@@ -1,24 +1,30 @@
-import { DurableObject } from 'cloudflare:workers';
+import { AsyncLocalStorage } from 'node:async_hooks';
+import { getServerByName } from 'partyserver';
+import type { ServerTimings } from './utils/server-timings';
 
-export class ListDurableObject extends DurableObject {
-  // biome-ignore lint/complexity/noUselessConstructor: <explanation>
-  constructor(ctx: DurableObjectState, env: Env) {
-    super(ctx, env);
-  }
+const asyncLocalStorage = new AsyncLocalStorage<{ timings: ServerTimings }>();
 
-  async sayHello(name: string): Promise<string> {
-    return `Hello, ${name}!`;
+function time<T>(name: string, fn: () => Promise<T>) {
+  const store = asyncLocalStorage.getStore();
+  if (!store) {
+    throw new Error('No store found');
   }
+  return store.timings.time(name, fn);
 }
 
 export default {
   async fetch(request, env, ctx): Promise<Response> {
-    const id: DurableObjectId = env.MY_DURABLE_OBJECT.idFromName(new URL(request.url).pathname);
+    const pathname = new URL(request.url).pathname;
 
-    const stub = env.MY_DURABLE_OBJECT.get(id);
-
-    const greeting = await stub.sayHello('world');
-
-    return new Response(greeting);
+    console.log(pathname);
+    if (pathname.startsWith('/api')) {
+      const stub = await getServerByName(env.LIST_DO, 'singleton');
+      const resp = await stub.fetch(request);
+      return resp;
+    }
+    return env.ASSETS.fetch(request);
   },
 } satisfies ExportedHandler<Env>;
+
+export { ListDurableObject } from './list/list-durable-object';
+export type { ListRouter } from './list/router';
