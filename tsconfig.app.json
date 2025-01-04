@@ -14,9 +14,8 @@
     "jsx": "react-jsx",
 
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "types": ["@cloudflare/workers-types/2023-07-01", "@types/node"]
   },
-  "include": ["app"]
+  "include": ["app", "worker-configuration.d.ts"]
 }

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "deploy": "wrangler deploy",
+    "deploy": "pnpm run build && wrangler deploy",
     "dev": "wrangler dev",
     "dev:app": "vite",
     "start": "wrangler dev",
@@ -14,6 +14,8 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@cloudflare/workers-types": "^4.20241230.0",
+    "@tanstack/router-devtools": "^1.95.1",
+    "@tanstack/router-plugin": "^1.95.1",
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
@@ -23,7 +25,10 @@
     "wrangler": "^3.60.3"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.62.15",
+    "@tanstack/react-router": "^1.95.1",
     "@trpc/client": "11.0.0-rc.682",
+    "@trpc/react-query": "11.0.0-rc.682",
     "@trpc/server": "11.0.0-rc.682",
     "partyserver": "^0.0.59",
     "react": "^19.0.0",

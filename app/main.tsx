@@ -1,18 +1,23 @@
+import './index.css';
+import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { App } from './app.tsx';
+import { routeTree } from './routeTree.gen';
 
-import './index.css';
-import { trpc } from './trpc.ts';
+const router = createRouter({ routeTree });
+
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
 
 const rootElement = document.getElementById('root');
-
-trpc.greet.query('world').then((text) => {
-  if (rootElement) {
-    createRoot(rootElement).render(
-      <StrictMode>
-        <App message={text} />
-      </StrictMode>,
-    );
-  }
-});
+if (rootElement) {
+  const root = createRoot(rootElement);
+  root.render(
+    <StrictMode>
+      <RouterProvider router={router} />
+    </StrictMode>,
+  );
+}
