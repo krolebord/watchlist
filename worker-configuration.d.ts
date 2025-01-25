@@ -6,6 +6,11 @@ interface Env {
   TMDB_READ_ACCESS_TOKEN: string;
   TMDB_API_KEY: string;
   LIST_DO: DurableObjectNamespace<import('./worker/index').ListDurableObject>;
+  MAIN_DB: D1Database;
   METADATA: { id: string; tag: string };
   ASSETS: Fetcher;
+}
+declare module '*.sql' {
+  const value: string;
+  export default value;
 }
