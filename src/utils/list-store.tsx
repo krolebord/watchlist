@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from 'react';
-import { createStore, type ExtractState, useStore } from 'zustand';
+import { type ExtractState, createStore, useStore } from 'zustand';
 import { combine } from 'zustand/middleware';
 
 type ListStoreProps = {

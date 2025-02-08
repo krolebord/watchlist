@@ -1,4 +1,5 @@
 import { type TrpcOutput, trpc } from '@/trpc';
+import { formatDuration } from '@/utils/format-duration';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
 import { CheckIcon, MailIcon, PenIcon, PlusIcon, TrashIcon } from 'lucide-react';
@@ -11,7 +12,6 @@ import { Select, SelectTrigger } from './ui/select';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { Skeleton } from './ui/skeleton';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from './ui/table';
-import { formatDuration } from '@/utils/format-duration';
 
 type ListSettingsSheetProps = {
   listId: string;

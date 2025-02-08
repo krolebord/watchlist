@@ -1,14 +1,21 @@
+import { itemsFilterSchema } from '@/../common/items-filter-schema';
 import { AddMovieDialog } from '@/components/add-movie-dialog';
 import { AppHeader, ProjectSelector, UserAvatarDropdown } from '@/components/app-layout';
 import { ListItemCard, useIsSelectionMode } from '@/components/list-item';
 import { ListSettingsSheet } from '@/components/list-settings-sheet';
 import { VoteAverage } from '@/components/movie-card';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { type TrpcOutput, trpc } from '@/trpc';
+import { ListStoreProvider, useListStore } from '@/utils/list-store';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
-import { createFileRoute, Link, useLoaderData, useParams, useSearch } from '@tanstack/react-router';
+import { Link, createFileRoute, useLoaderData, useParams, useSearch } from '@tanstack/react-router';
 import { zodValidator } from '@tanstack/zod-adapter';
-import { itemsFilterSchema } from '@/../common/items-filter-schema';
 import { format } from 'date-fns';
 import {
   ArrowDownIcon,
@@ -26,13 +33,6 @@ import {
 } from 'lucide-react';
 import { RefObject, useMemo } from 'react';
 import type { z } from 'zod';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { ListStoreProvider, useListStore } from '@/utils/list-store';
 
 export const Route = createFileRoute('/_app/list/$id')({
   component: RouteComponent,

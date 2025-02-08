@@ -2,10 +2,10 @@ import { TRPCError } from '@trpc/server';
 import { and, count, eq, sql } from 'drizzle-orm';
 import { TMDB } from 'tmdb-ts';
 import { z } from 'zod';
+import { itemsFilterSchema } from '../../../common/items-filter-schema';
 import { mainSchema } from '../db';
 import { listProcedure, protectedProcedure, router } from '../trpc';
 import { sendMagicLinkEmail } from './auth.router';
-import { itemsFilterSchema } from '../../../common/items-filter-schema';
 
 export const listRouter = router({
   getLists: protectedProcedure.query(async ({ ctx }) => {
