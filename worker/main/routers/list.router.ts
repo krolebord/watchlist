@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server';
-import { and, eq } from 'drizzle-orm';
+import { and, count, eq, sql } from 'drizzle-orm';
 import { TMDB } from 'tmdb-ts';
 import { z } from 'zod';
 import { mainSchema } from '../db';
@@ -55,27 +55,40 @@ export const listRouter = router({
   }),
 
   getDetails: listProcedure.query(async ({ input, ctx }) => {
-    const list = await ctx.db.query.listsTable.findFirst({
-      where: eq(mainSchema.listsTable.id, input.listId),
-      columns: {
-        id: true,
-        name: true,
-        createdAt: true,
-      },
-      with: {
-        usersToLists: {
-          with: {
-            user: {
-              columns: {
-                id: true,
-                name: true,
-                email: true,
+    const [list, [stats]] = await Promise.all([
+      ctx.db.query.listsTable.findFirst({
+        where: eq(mainSchema.listsTable.id, input.listId),
+        columns: {
+          id: true,
+          name: true,
+          createdAt: true,
+        },
+        with: {
+          usersToLists: {
+            with: {
+              user: {
+                columns: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      }),
+      ctx.db
+        .select({
+          count: count(mainSchema.listItemsTable.id),
+          watchedCount: sql<number>`count(case when ${mainSchema.listItemsTable.watchedAt} is not null then 1 end)`,
+          totalDuration: sql<number>`sum(${mainSchema.listItemsTable.duration})`,
+          watchedDuration: sql<number>`sum(case when ${mainSchema.listItemsTable.watchedAt} is not null then ${mainSchema.listItemsTable.duration} else 0 end)`,
+          averageRating: sql<number>`avg(${mainSchema.listItemsTable.rating})`,
+        })
+        .from(mainSchema.listItemsTable)
+        .where(eq(mainSchema.listItemsTable.listId, input.listId))
+        .groupBy(mainSchema.listItemsTable.listId),
+    ]);
 
     if (!list) {
       throw new TRPCError({ code: 'NOT_FOUND' });
@@ -86,6 +99,7 @@ export const listRouter = router({
     return {
       ...rest,
       users: usersToLists.map((user) => user.user),
+      stats,
     };
   }),
 

@@ -10,6 +10,7 @@ import { Button } from './ui/button';
 import { ContextMenu, ContextMenuTrigger } from './ui/context-menu';
 import { DynamicMenuContent, type DynamicMenuContentType, DynamicMenuItem } from './ui/dynamic-menu-content';
 import { DropdownMenu, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { formatDuration } from '@/utils/format-duration';
 
 type ListItem = TrpcOutput['list']['getItems'][number];
 export function ListItemCard({ item, listId }: { item: ListItem; listId: string }) {
@@ -142,10 +143,4 @@ function ListItemMenuContent({ type, item, listId }: ListItemMenuContentProps) {
       )}
     </DynamicMenuContent>
   );
-}
-
-function formatDuration(duration: number) {
-  const hours = Math.floor(duration / 60);
-  const minutes = duration % 60;
-  return `${hours}h ${minutes}m`;
 }

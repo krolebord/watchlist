@@ -11,6 +11,7 @@ import { Select, SelectTrigger } from './ui/select';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { Skeleton } from './ui/skeleton';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from './ui/table';
+import { formatDuration } from '@/utils/format-duration';
 
 type ListSettingsSheetProps = {
   listId: string;
@@ -56,9 +57,20 @@ type ListSettingsFormProps = {
 };
 function ListSettingsForm({ list }: ListSettingsFormProps) {
   return (
-    <div className="flex flex-col gap-12">
-      <ListNameForm listId={list.id} name={list.name} />
-      <ListUsers listId={list.id} users={list.users} />
+    <div className="flex flex-col gap-12 justify-between h-full">
+      <div className="flex flex-col gap-12">
+        <ListNameForm listId={list.id} name={list.name} />
+        <ListUsers listId={list.id} users={list.users} />
+      </div>
+      <div className="flex flex-col text-gray-500 pb-6">
+        <p>
+          Watched: {list.stats.watchedCount} / {list.stats.count}
+        </p>
+        <p>
+          Duration: {formatDuration(list.stats.watchedDuration)} / {formatDuration(list.stats.totalDuration)}
+        </p>
+        <p>Average rating: {Math.round(list.stats.averageRating)}</p>
+      </div>
     </div>
   );
 }
@@ -170,11 +182,6 @@ function ListUsers({ listId, users }: ListUsersProps) {
               <TableCell className="p-2">
                 <div className="max-w-[180px] truncate">{user.email}</div>
               </TableCell>
-              {/* <TableCell className="p-2 w-10">
-                <Button variant="ghost" size="icon">
-                  <TrashIcon className="!size-4" />
-                </Button>
-              </TableCell> */}
             </TableRow>
           ))}
         </TableBody>
