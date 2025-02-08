@@ -1,7 +1,7 @@
 import { trpc } from '@/trpc';
 
 import type { TrpcOutput } from '@/trpc';
-import { Clock4Icon, EllipsisVerticalIcon, EyeOffIcon, TrashIcon } from 'lucide-react';
+import { Clock4Icon, EllipsisVerticalIcon, EyeOffIcon, MinusIcon, PlusIcon, TrashIcon } from 'lucide-react';
 import { CalendarIcon } from 'lucide-react';
 import { VoteAverage } from './movie-card';
 import { CheckIcon } from 'lucide-react';
@@ -11,10 +11,17 @@ import { ContextMenu, ContextMenuTrigger } from './ui/context-menu';
 import { DynamicMenuContent, type DynamicMenuContentType, DynamicMenuItem } from './ui/dynamic-menu-content';
 import { DropdownMenu, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { formatDuration } from '@/utils/format-duration';
+import { useListStore } from '@/utils/list-store';
+import { cn } from '@/utils/cn';
 
 type ListItem = TrpcOutput['list']['getItems'][number];
 export function ListItemCard({ item, listId }: { item: ListItem; listId: string }) {
   const isWatched = !!item.watchedAt;
+  const isSelected = useIsItemSelected(item.id);
+  const isSelectionMode = useIsSelectionMode();
+  const isRandomizedItem = useIsRandomizedItem(item.id);
+
+  const toggleItemSelection = useListStore((state) => state.toggleItemSelection);
 
   const utils = trpc.useUtils();
   const markAsWatchedMutation = trpc.list.markAsWatched.useMutation({
@@ -25,19 +32,39 @@ export function ListItemCard({ item, listId }: { item: ListItem; listId: string 
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger>
-        <div className="bg-card rounded-md shadow-sm border border-border overflow-hidden relative group w-full grid grid-cols-3">
-          {item.posterUrl && (
-            <div className="w-full aspect-[2/3] overflow-hidden relative">
-              <img className="object-cover w-full h-full" src={item.posterUrl} alt={item.title} />
-              {item.rating && <VoteAverage className="absolute top-2 left-2" voteAverage={item.rating / 10} />}
-              {isWatched && (
-                <div className="absolute top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center">
-                  <CheckIcon className="!size-10 text-green-500" />
-                </div>
-              )}
-            </div>
+      <ContextMenuTrigger asChild>
+        <div
+          className={cn(
+            'bg-card rounded-md shadow-sm border border-border overflow-hidden relative group w-full grid grid-cols-3',
+            isRandomizedItem && 'border-primary',
           )}
+        >
+          <div
+            className={cn('w-full aspect-[2/3] overflow-hidden relative', isSelectionMode && 'cursor-pointer')}
+            onClick={() => {
+              if (!isSelectionMode) {
+                return;
+              }
+
+              toggleItemSelection(item.id);
+            }}
+          >
+            {item.posterUrl && <img className="object-cover w-full h-full" src={item.posterUrl} alt={item.title} />}
+            {item.rating && !isSelected && (
+              <VoteAverage className="absolute top-2 left-2" voteAverage={item.rating / 10} />
+            )}
+            {(isWatched || isSelected) && (
+              <div className="absolute top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center">
+                {isWatched && <CheckIcon className="!size-10 text-green-500" />}
+              </div>
+            )}
+            {isSelected && (
+              <p className="absolute top-2 left-2 flex items-center justify-center size-8 bg-primary rounded-full text-white select-none">
+                <CheckIcon />
+              </p>
+            )}
+          </div>
+
           <div className="col-span-2 flex flex-col justify-between p-4">
             <div className="flex flex-col gap-2">
               <a
@@ -98,6 +125,9 @@ type ListItemMenuContentProps = {
 function ListItemMenuContent({ type, item, listId }: ListItemMenuContentProps) {
   const isWatched = !!item.watchedAt;
 
+  const isSelected = useIsItemSelected(item.id);
+  const toggleItemSelection = useListStore((state) => state.toggleItemSelection);
+
   const utils = trpc.useUtils();
   const removeItemMutation = trpc.list.removeItem.useMutation({
     onSuccess: () => {
@@ -117,6 +147,10 @@ function ListItemMenuContent({ type, item, listId }: ListItemMenuContentProps) {
 
   return (
     <DynamicMenuContent type={type}>
+      <DynamicMenuItem onClick={() => toggleItemSelection(item.id)}>
+        {isSelected ? <MinusIcon /> : <PlusIcon />}
+        <span>{isSelected ? 'Deselect' : 'Select'}</span>
+      </DynamicMenuItem>
       <DynamicMenuItem
         disabled={removeItemMutation.isPending}
         onClick={() => removeItemMutation.mutate({ listId, itemId: item.id })}
@@ -143,4 +177,16 @@ function ListItemMenuContent({ type, item, listId }: ListItemMenuContentProps) {
       )}
     </DynamicMenuContent>
   );
+}
+
+function useIsItemSelected(itemId: string) {
+  return useListStore((state) => state.selectedItems.includes(itemId));
+}
+
+export function useIsSelectionMode() {
+  return useListStore((state) => state.selectedItems.length > 0);
+}
+
+function useIsRandomizedItem(itemId: string) {
+  return useListStore((state) => state.randomizedItem === itemId);
 }

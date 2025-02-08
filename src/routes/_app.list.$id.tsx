@@ -1,6 +1,6 @@
 import { AddMovieDialog } from '@/components/add-movie-dialog';
 import { AppHeader, ProjectSelector, UserAvatarDropdown } from '@/components/app-layout';
-import { ListItemCard } from '@/components/list-item';
+import { ListItemCard, useIsSelectionMode } from '@/components/list-item';
 import { ListSettingsSheet } from '@/components/list-settings-sheet';
 import { VoteAverage } from '@/components/movie-card';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import {
   EyeOffIcon,
   PlusIcon,
   SettingsIcon,
+  ShuffleIcon,
   StarIcon,
   TrashIcon,
   XIcon,
@@ -31,6 +32,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ListStoreProvider, useListStore } from '@/utils/list-store';
 
 export const Route = createFileRoute('/_app/list/$id')({
   component: RouteComponent,
@@ -65,8 +67,10 @@ export function useListId() {
 }
 
 function RouteComponent() {
+  const listId = useListId();
+
   return (
-    <>
+    <ListStoreProvider listId={listId}>
       <AppHeader>
         <div className="flex items-center gap-2">
           <ProjectSelector />
@@ -75,11 +79,14 @@ function RouteComponent() {
         <UserAvatarDropdown />
       </AppHeader>
       <AddItemButton />
-      <SortingHeader />
+      <div className="flex items-center justify-between px-4 pt-2">
+        <SortingHeader />
+        <RandomizeSelectionButton />
+      </div>
       <div className="w-full flex flex-col items-center">
         <ItemsList />
       </div>
-    </>
+    </ListStoreProvider>
   );
 }
 
@@ -116,11 +123,46 @@ function SortingOption({ sortBy }: SortingByOptionProps) {
   );
 }
 
+function RandomizeSelectionButton() {
+  const selectedRandomItem = useListStore((state) => state.randomizedItem);
+  const isSelectionMode = useIsSelectionMode();
+
+  const randomizeSelection = useListStore((state) => state.selectRandomFromSelectedItems);
+  const clearRandomizedItem = useListStore((state) => state.clearRandomizedItem);
+
+  if (!isSelectionMode && !selectedRandomItem) {
+    return null;
+  }
+
+  return (
+    <Button
+      variant="outline"
+      onClick={() => {
+        if (!selectedRandomItem) {
+          randomizeSelection();
+        } else {
+          clearRandomizedItem();
+        }
+      }}
+    >
+      {selectedRandomItem ? (
+        <>
+          <CheckIcon /> Clear
+        </>
+      ) : (
+        <>
+          <ShuffleIcon /> Select random{' '}
+        </>
+      )}
+    </Button>
+  );
+}
+
 function SortingHeader() {
   const { sortBy, sortOrder } = useSearch({ from: '/_app/list/$id' });
 
   return (
-    <div className="flex items-center gap-1 px-4 pt-2">
+    <div className="flex items-center gap-1">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline">
@@ -164,6 +206,21 @@ function ItemsList() {
   const listId = useListId();
   const { items } = useLoaderData({ from: '/_app/list/$id' });
 
+  const selectedRandomizedItem = useListStore((state) => state.randomizedItem);
+
+  const orderedItems = useMemo(() => {
+    if (!selectedRandomizedItem) {
+      return items;
+    }
+
+    const selectedItemIndex = items.findIndex((item) => item.id === selectedRandomizedItem);
+    const newItems = [...items];
+    newItems.splice(selectedItemIndex, 1);
+    newItems.unshift(items[selectedItemIndex]);
+
+    return newItems;
+  }, [items, selectedRandomizedItem]);
+
   const [animateRef] = useAutoAnimate();
 
   return (
@@ -171,7 +228,7 @@ function ItemsList() {
       className="w-full flex flex-wrap justify-center md:grid md:grid-cols-2 xl:grid-cols-3 gap-4 px-4 pt-4 pb-20 max-w-7xl"
       ref={animateRef}
     >
-      {items.map((item) => (
+      {orderedItems.map((item) => (
         <ListItemCard key={item.id} item={item} listId={listId} />
       ))}
     </div>
