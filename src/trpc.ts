@@ -3,9 +3,9 @@ import { httpBatchLink } from '@trpc/client';
 import { createTRPCQueryUtils, createTRPCReact } from '@trpc/react-query';
 import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
 import superjson from 'superjson';
-import type { ListRouter } from '../worker';
+import type { MainRouter } from '../worker';
 
-export const trpc = createTRPCReact<ListRouter>();
+export const trpc = createTRPCReact<MainRouter>();
 export const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
@@ -15,12 +15,18 @@ export const trpcClient = trpc.createClient({
   ],
 });
 
-export const queryClient = new QueryClient();
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 500,
+    },
+  },
+});
 
 export const trpcUtils = createTRPCQueryUtils({
   client: trpcClient,
   queryClient,
 });
 
-export type TrpcInput = inferRouterInputs<ListRouter>;
-export type TrpcOutput = inferRouterOutputs<ListRouter>;
+export type TrpcInput = inferRouterInputs<MainRouter>;
+export type TrpcOutput = inferRouterOutputs<MainRouter>;

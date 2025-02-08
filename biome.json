@@ -22,7 +22,11 @@
     "enabled": true,
     "ignore": ["tsconfig.json", "tsconfig.*.json"],
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "a11y": {
+        "useKeyWithClickEvents": "off",
+        "useKeyWithMouseEvents": "off"
+      }
     }
   },
   "javascript": {

@@ -5,6 +5,11 @@ interface Env {
   MODE: string;
   TMDB_READ_ACCESS_TOKEN: string;
   TMDB_API_KEY: string;
+  RESEND_API_KEY: string;
+  ACCOUNT_ID: string;
+  DATABASE_ID: string;
+  ACCOUNT_TOKEN: string;
+  APP_URL: string;
   LIST_DO: DurableObjectNamespace<import('./worker/index').ListDurableObject>;
   MAIN_DB: D1Database;
   METADATA: { id: string; tag: string };

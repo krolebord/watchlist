@@ -6,16 +6,16 @@ import type { Config } from 'drizzle-kit';
 config({ path: pathFromRoot('.dev.vars') });
 
 const localConfig = {
-  schema: pathFromRoot('worker/main/db/schema.ts'),
+  schema: 'worker/main/db/schema.ts',
   dialect: 'sqlite',
   dbCredentials: {
-    url: findLocalDbPath(pathFromRoot('.wrangler/state/v3/d1/miniflare-D1DatabaseObject')) as string,
+    url: findLocalDbPath('.wrangler/state/v3/d1/miniflare-D1DatabaseObject') as string,
   },
 } satisfies Config;
 
 const prodConfig = {
-  schema: './src/schema.ts',
-  out: './migrations',
+  schema: 'worker/main/db/schema.ts',
+  out: 'worker/main/db/migrations',
   dialect: 'sqlite',
   driver: 'd1-http',
   dbCredentials: {
@@ -37,5 +37,6 @@ function findLocalDbPath(dir: string) {
   if (!sqliteFile) {
     throw new Error('No SQLite file found in the specified directory');
   }
+  console.log(fsPath.join(dir, sqliteFile));
   return fsPath.join(dir, sqliteFile);
 }

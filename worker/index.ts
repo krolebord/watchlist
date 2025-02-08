@@ -1,5 +1,10 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import { getServerByName } from 'partyserver';
+import { createDb } from './main/db';
+import { mainRouter } from './main/router';
+import { createContext } from './main/trpc';
+import { getSessionId, getValidUserSession } from './utils/auth';
 import type { ServerTimings } from './utils/server-timings';
 
 const asyncLocalStorage = new AsyncLocalStorage<{ timings: ServerTimings }>();
@@ -17,13 +22,25 @@ export default {
     const pathname = new URL(request.url).pathname;
 
     if (pathname.startsWith('/api')) {
-      const stub = await getServerByName(env.LIST_DO, 'singleton');
-      const resp = await stub.fetch(request);
-      return resp;
+      return await fetchRequestHandler({
+        endpoint: '/api/trpc',
+        req: request,
+        router: mainRouter,
+        createContext: ({ req, resHeaders, info }) => createContext({ req, resHeaders, info, env }),
+        onError({ error }) {
+          console.error(error);
+        },
+      });
+
+      // const stub = await getServerByName(env.LIST_DO, 'singleton');
+      // const resp = await stub.fetch(request);
+      // return resp;
     }
     return env.ASSETS.fetch(request);
   },
 } satisfies ExportedHandler<Env>;
 
 export { ListDurableObject } from './list/list-durable-object';
+
+export type { MainRouter } from './main/router';
 export type { ListRouter } from './list/router';
