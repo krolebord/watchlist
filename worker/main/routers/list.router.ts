@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { mainSchema } from '../db';
 import { listProcedure, protectedProcedure, router } from '../trpc';
 import { sendMagicLinkEmail } from './auth.router';
+import { itemsFilterSchema } from '../../../common/items-filter-schema';
 
 export const listRouter = router({
   getLists: protectedProcedure.query(async ({ ctx }) => {
@@ -171,13 +172,16 @@ export const listRouter = router({
       .where(eq(mainSchema.listItemsTable.id, input.itemId));
   }),
 
-  getItems: listProcedure.query(async ({ ctx, input }) => {
+  getItems: listProcedure.input(itemsFilterSchema).query(async ({ ctx, input }) => {
+    const { sortBy, sortOrder } = input;
+
+    const sortByColumn = getItemsOrderByColumn(sortBy);
     const items = await ctx.db.query.listItemsTable.findMany({
       where: eq(mainSchema.listItemsTable.listId, input.listId),
       orderBy: (f, x) => [
         x.sql`case when ${f.watchedAt} is not null then 1 else 0 end`,
+        sortOrder === 'asc' ? x.asc(sortByColumn) : x.desc(sortByColumn),
         x.desc(f.watchedAt),
-        f.createdAt,
         f.order,
       ],
     });
@@ -185,3 +189,16 @@ export const listRouter = router({
     return items;
   }),
 });
+
+type FilteringOptions = z.infer<typeof itemsFilterSchema>;
+
+function getItemsOrderByColumn(sortBy: FilteringOptions['sortBy']) {
+  switch (sortBy) {
+    case 'duration':
+      return mainSchema.listItemsTable.duration;
+    case 'rating':
+      return mainSchema.listItemsTable.rating;
+    case 'dateAdded':
+      return mainSchema.listItemsTable.createdAt;
+  }
+}
