@@ -34,7 +34,7 @@ export function AddMovieDialog({ listId, asChild, children, alreadyAddedItems }:
   const { data } = trpc.search.findMovie.useQuery(
     { q: searchQuery },
     {
-      enabled: !!searchQuery,
+      enabled: !!searchQuery && isOpen,
       placeholderData: keepPreviousData,
     },
   );
