@@ -64,7 +64,12 @@ export function ListItemCard({ item, listId }: { item: ListItem; listId: string 
             }}
           >
             {item.posterUrl && (
-              <img className="object-cover w-full h-full select-none" src={item.posterUrl} alt={item.title} />
+              <img
+                className="object-cover w-full h-full select-none"
+                draggable={false}
+                src={item.posterUrl}
+                alt={item.title}
+              />
             )}
             {item.rating && !isSelected && (
               <VoteAverage className="absolute top-2 left-2" voteAverage={item.rating / 10} />

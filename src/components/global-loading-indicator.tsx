@@ -1,6 +1,6 @@
 import { cn } from '@/utils/cn';
 import { useRouterState } from '@tanstack/react-router';
-import { useDeferredValue, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSpinDelay } from 'spin-delay';
 
 export function GlobalProgressIndicator() {
