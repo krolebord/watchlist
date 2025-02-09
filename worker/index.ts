@@ -3,14 +3,14 @@ import { mainRouter } from './main/router';
 import { createContext, createServices } from './main/trpc';
 
 export default {
-  async fetch(request, env, ctx): Promise<Response> {
-    const pathname = new URL(request.url).pathname;
+  async fetch(req, env, ctx): Promise<Response> {
+    const pathname = new URL(req.url).pathname;
 
     if (pathname.startsWith('/api')) {
-      const services = createServices({ env });
+      const services = await createServices({ env, req });
       return await fetchRequestHandler({
         endpoint: '/api/trpc',
-        req: request,
+        req,
         router: mainRouter,
         createContext: ({ req, resHeaders, info }) => createContext({ req, resHeaders, info, env, services }),
         onError({ error }) {
@@ -28,7 +28,7 @@ export default {
         },
       });
     }
-    return env.ASSETS.fetch(request);
+    return env.ASSETS.fetch(req);
   },
 } satisfies ExportedHandler<Env>;
 

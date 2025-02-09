@@ -6,7 +6,7 @@ import { and, eq, gt, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import { sessionCookieName } from '../../utils/auth';
 import { type MainDb, mainSchema } from '../db';
-import { type Context, publicProcedure, router, sessionProcedure } from '../trpc';
+import { type Context, publicProcedure, router } from '../trpc';
 
 export const authRouter = router({
   sendMagicLink: publicProcedure.input(z.object({ email: z.string().email() })).mutation(async ({ input, ctx }) => {
@@ -113,7 +113,7 @@ export const authRouter = router({
       return { status: 'success' as const };
     }),
 
-  getUser: sessionProcedure.query(({ ctx }) => {
+  getUser: publicProcedure.query(({ ctx }) => {
     return ctx.userSession?.user ?? null;
   }),
 

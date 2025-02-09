@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server';
-import { and, count, eq, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { itemsFilterSchema } from '../../../common/items-filter-schema';
 import { mainSchema } from '../db';
@@ -175,15 +175,18 @@ export const listRouter = router({
     const { sortBy, sortOrder } = input;
 
     const sortByColumn = getItemsOrderByColumn(sortBy);
-    const items = await ctx.db.query.listItemsTable.findMany({
-      where: eq(mainSchema.listItemsTable.listId, input.listId),
-      orderBy: (f, x) => [
-        x.sql`case when ${f.watchedAt} is not null then 1 else 0 end`,
-        sortOrder === 'asc' ? x.asc(sortByColumn) : x.desc(sortByColumn),
-        x.desc(f.watchedAt),
+
+    const f = mainSchema.listItemsTable;
+    const items = await ctx.db
+      .select()
+      .from(f)
+      .where(eq(f.listId, input.listId))
+      .orderBy(
+        sql`case when ${f.watchedAt} is not null then 1 else 0 end`,
+        sortOrder === 'asc' ? asc(sortByColumn) : desc(sortByColumn),
+        desc(f.watchedAt),
         f.order,
-      ],
-    });
+      );
 
     return items;
   }),

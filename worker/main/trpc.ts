@@ -11,14 +11,19 @@ import { getSessionId, getValidUserSession } from '../utils/auth';
 import { ServerTimings } from '../utils/server-timings';
 import { createDb, mainSchema } from './db';
 
-export function createServices({ env }: { env: Env }) {
+export async function createServices({ env, req }: { env: Env; req: Request }) {
   const serverTimings = new ServerTimings();
   const emailService = new EmailService(env.RESEND_API_KEY);
   const db = createDb(env);
   const tmdb = new TMDB(env.TMDB_READ_ACCESS_TOKEN);
   const time = <T>(name: string, fn: () => Promise<T>) => serverTimings.time(name, fn);
 
-  return { serverTimings, emailService, db, tmdb, createId, time };
+  const sessionId = getSessionId(req);
+  const userSession = await time('getSession', async () =>
+    sessionId ? await getValidUserSession(db, sessionId) : null,
+  );
+
+  return { serverTimings, emailService, db, tmdb, createId, time, userSession };
 }
 
 export function createContext({
@@ -29,7 +34,7 @@ export function createContext({
   services,
 }: FetchCreateContextFnOptions & {
   env: Env;
-  services: ReturnType<typeof createServices>;
+  services: Awaited<ReturnType<typeof createServices>>;
 }) {
   return { req, resHeaders, env, info, ...services };
 }
@@ -52,15 +57,7 @@ export const publicProcedure = t.procedure.use(async (opts) => {
   );
 });
 
-export const sessionProcedure = publicProcedure.use(async (opts) => {
-  const sessionId = getSessionId(opts.ctx.req);
-
-  const userSession = sessionId ? await getValidUserSession(opts.ctx.db, sessionId) : null;
-
-  return opts.next({ ctx: { userSession } });
-});
-
-export const protectedProcedure = sessionProcedure.use(async (opts) => {
+export const protectedProcedure = publicProcedure.use(async (opts) => {
   const userSession = opts.ctx.userSession;
 
   if (!userSession) {
