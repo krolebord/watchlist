@@ -8,21 +8,30 @@ import { TMDB } from 'tmdb-ts';
 import { z } from 'zod';
 import { EmailService } from '../emails/emails';
 import { getSessionId, getValidUserSession } from '../utils/auth';
+import { ServerTimings } from '../utils/server-timings';
 import { createDb, mainSchema } from './db';
+
+export function createServices({ env }: { env: Env }) {
+  const serverTimings = new ServerTimings();
+  const emailService = new EmailService(env.RESEND_API_KEY);
+  const db = createDb(env);
+  const tmdb = new TMDB(env.TMDB_READ_ACCESS_TOKEN);
+  const time = <T>(name: string, fn: () => Promise<T>) => serverTimings.time(name, fn);
+
+  return { serverTimings, emailService, db, tmdb, createId, time };
+}
 
 export function createContext({
   req,
   resHeaders,
   info,
   env,
+  services,
 }: FetchCreateContextFnOptions & {
   env: Env;
+  services: ReturnType<typeof createServices>;
 }) {
-  const emailService = new EmailService(env.RESEND_API_KEY);
-  const db = createDb(env);
-  const tmdb = new TMDB(env.TMDB_READ_ACCESS_TOKEN);
-
-  return { req, resHeaders, env, info, db, emailService, tmdb, createId };
+  return { req, resHeaders, env, info, ...services };
 }
 
 export type Context = Awaited<ReturnType<typeof createContext>>;
@@ -32,9 +41,18 @@ const t = initTRPC.context<Context>().create({
 });
 
 export const router = t.router;
-export const publicProcedure = t.procedure;
+export const publicProcedure = t.procedure.use(async (opts) => {
+  const path = opts.path;
+  return await opts.ctx.time(path, () =>
+    opts.next({
+      ctx: {
+        time: <T>(name: string, fn: () => Promise<T>) => opts.ctx.time(`${path}.${name}`, fn),
+      },
+    }),
+  );
+});
 
-export const sessionProcedure = t.procedure.use(async (opts) => {
+export const sessionProcedure = publicProcedure.use(async (opts) => {
   const sessionId = getSessionId(opts.ctx.req);
 
   const userSession = sessionId ? await getValidUserSession(opts.ctx.db, sessionId) : null;

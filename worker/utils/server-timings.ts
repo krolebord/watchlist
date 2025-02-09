@@ -10,6 +10,6 @@ export class ServerTimings {
   }
 
   getSerializedTimings() {
-    return this.timings.map(([name, time]) => `${name};dur=${time}`).join(', ');
+    return this.timings.map(([name, time]) => `${name};dur=${time}`).join(',');
   }
 }
