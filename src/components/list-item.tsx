@@ -239,26 +239,33 @@ function getPriorityValue(priority: string) {
 const priorityColors = {
   high: {
     bg: 'bg-orange-500',
+    border: 'border-orange-500',
+    text: 'text-orange-500',
     icon: <FlameIcon />,
   },
   normal: {
     bg: 'bg-blue-500',
+    border: 'border-blue-500',
+    text: 'text-blue-500',
     icon: <ThumbsUpIcon />,
   },
   low: {
     bg: 'bg-gray-500',
+    border: 'border-gray-500',
+    text: 'text-gray-500',
     icon: <SkullIcon />,
   },
 };
 
 export function PriorityBadge({ priority, className }: { priority: number; className: string }) {
-  const { bg, icon } = priorityColors[getPriorityLabel(priority)];
+  const { text, border, icon } = priorityColors[getPriorityLabel(priority)];
 
   return (
     <p
       className={cn(
-        'flex items-center justify-center size-8 rounded-full border-2 border-white text-white select-none [&_svg]:size-5 [&_svg]:shrink-0',
-        bg,
+        'flex items-center justify-center size-8 rounded-full border-2 bg-black select-none [&_svg]:size-5 [&_svg]:shrink-0',
+        text,
+        border,
         className,
       )}
     >
