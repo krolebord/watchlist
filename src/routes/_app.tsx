@@ -1,3 +1,4 @@
+import { GlobalProgressIndicator } from '@/components/global-loading-indicator';
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_app')({
@@ -15,5 +16,10 @@ export const Route = createFileRoute('/_app')({
 });
 
 function RouteComponent() {
-  return <Outlet />;
+  return (
+    <>
+      <GlobalProgressIndicator />
+      <Outlet />
+    </>
+  );
 }
