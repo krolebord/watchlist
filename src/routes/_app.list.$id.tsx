@@ -14,7 +14,7 @@ import {
 import { type TrpcOutput, trpc } from '@/trpc';
 import { ListStoreProvider, useListStore } from '@/utils/list-store';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
-import { Link, createFileRoute, useLoaderData, useParams, useSearch } from '@tanstack/react-router';
+import { Link, createFileRoute, useLoaderData, useLoaderDeps, useParams, useSearch } from '@tanstack/react-router';
 import { zodValidator } from '@tanstack/zod-adapter';
 import { format } from 'date-fns';
 import {
@@ -23,7 +23,10 @@ import {
   CalendarIcon,
   CheckIcon,
   Clock4Icon,
+  EllipsisVertical,
   EyeOffIcon,
+  MoreHorizontalIcon,
+  MoreVerticalIcon,
   PlusIcon,
   SettingsIcon,
   ShuffleIcon,
@@ -39,10 +42,12 @@ export const Route = createFileRoute('/_app/list/$id')({
   validateSearch: zodValidator(itemsFilterSchema),
   loaderDeps: ({ search: { sortBy, sortOrder } }) => ({ sortBy, sortOrder }),
   loader: async ({ params, context, deps }) => {
-    const data = await context.trpc.list.getItems.fetch({ listId: params.id, ...deps });
+    await Promise.all([
+      context.trpc.list.getItems.prefetch({ listId: params.id, ...deps }),
+      context.trpc.list.getLists.prefetch(),
+    ]);
     return {
       listId: params.id,
-      items: data,
     };
   },
 });
@@ -81,7 +86,10 @@ function RouteComponent() {
       <AddItemButton />
       <div className="flex items-center justify-between px-4 pt-2">
         <SortingHeader />
-        <RandomizeSelectionButton />
+        <div className="flex items-center gap-2">
+          <RandomizeSelectionButton />
+          <HeaderMenu />
+        </div>
       </div>
       <div className="w-full flex flex-col items-center">
         <ItemsList />
@@ -158,6 +166,37 @@ function RandomizeSelectionButton() {
   );
 }
 
+function HeaderMenu() {
+  const listId = useListId();
+  const selectAllItems = useListStore((state) => state.selectItems);
+  const clearSelectedItems = useListStore((state) => state.clearSelectedItems);
+  const isSelectionMode = useIsSelectionMode();
+
+  const { data: allItems = [] } = trpc.list.getItems.useQuery(useListItemsArgs(), {
+    select: (data) => data.map((item) => item.id),
+  });
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="icon">
+          <EllipsisVertical />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem onClick={() => selectAllItems(allItems)}>
+          <PlusIcon /> Select all
+        </DropdownMenuItem>
+        {isSelectionMode && (
+          <DropdownMenuItem onClick={() => clearSelectedItems()}>
+            <CheckIcon /> Clear selection
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function SortingHeader() {
   const { sortBy, sortOrder } = useSearch({ from: '/_app/list/$id' });
 
@@ -188,9 +227,8 @@ function SortingHeader() {
 function AddItemButton() {
   const listId = useListId();
 
-  const alreadyAddedItems = useLoaderData({
-    from: '/_app/list/$id',
-    select: (data) => data.items.map((item) => item.tmdbId).filter((id) => id !== null),
+  const { data: alreadyAddedItems = [] } = trpc.list.getItems.useQuery(useListItemsArgs(), {
+    select: (data) => data.map((item) => item.tmdbId).filter((id) => id !== null),
   });
 
   return (
@@ -204,13 +242,13 @@ function AddItemButton() {
 
 function ItemsList() {
   const listId = useListId();
-  const { items } = useLoaderData({ from: '/_app/list/$id' });
+  const { data: items } = trpc.list.getItems.useQuery(useListItemsArgs());
 
   const selectedRandomizedItem = useListStore((state) => state.randomizedItem);
 
   const orderedItems = useMemo(() => {
-    if (!selectedRandomizedItem) {
-      return items;
+    if (!selectedRandomizedItem || !items) {
+      return items ?? [];
     }
 
     const selectedItemIndex = items.findIndex((item) => item.id === selectedRandomizedItem);
@@ -233,4 +271,11 @@ function ItemsList() {
       ))}
     </div>
   );
+}
+
+function useListItemsArgs() {
+  const listId = useListId();
+  const deps = useLoaderDeps({ from: '/_app/list/$id' });
+
+  return { listId, ...deps };
 }

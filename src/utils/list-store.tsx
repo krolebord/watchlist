@@ -26,6 +26,8 @@ const createListStore = ({ listId }: ListStoreProps) =>
             randomizedItem: state.selectedItems[Math.floor(Math.random() * state.selectedItems.length)],
           })),
         clearRandomizedItem: () => set({ randomizedItem: null }),
+        clearSelectedItems: () => set({ selectedItems: [] }),
+        selectItems: (itemIds: string[]) => set({ selectedItems: itemIds }),
       }),
     ),
   );

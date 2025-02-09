@@ -40,12 +40,8 @@ export function ListItemCard({ item, listId }: { item: ListItem; listId: string 
           )}
         >
           <div
-            className={cn('w-full aspect-[2/3] overflow-hidden relative', isSelectionMode && 'cursor-pointer')}
+            className={cn('w-full aspect-[2/3] overflow-hidden relative cursor-pointer')}
             onClick={() => {
-              if (!isSelectionMode) {
-                return;
-              }
-
               toggleItemSelection(item.id);
             }}
           >
