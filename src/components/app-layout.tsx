@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 
 import { trpc } from '@/trpc';
+import { cn } from '@/utils/cn';
 import { useUser } from '@/utils/use-user';
 import { useMatch, useNavigate } from '@tanstack/react-router';
 import { useMemo } from 'react';
@@ -13,13 +14,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-
 type AppHeaderProps = {
   children: React.ReactNode;
+  className?: string;
 };
-export function AppHeader({ children }: AppHeaderProps) {
+export function AppHeader({ children, className }: AppHeaderProps) {
   return (
-    <header className="bg-card border-b border-border justify-between items-center h-14 flex px-1 gap-2">
+    <header
+      className={cn('bg-card border-b border-border justify-between items-center h-14 flex px-4 gap-2', className)}
+    >
       {children}
     </header>
   );

@@ -103,6 +103,7 @@ export const listItemsTable = sqliteTable('list_items', (x) => ({
     .notNull()
     .references(() => listsTable.id, { onDelete: 'cascade' }),
   order: x.integer().notNull().default(0),
+  priority: x.integer().notNull().default(0),
 
   title: x.text().notNull(),
   posterUrl: x.text(),

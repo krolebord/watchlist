@@ -22,6 +22,7 @@ import {
   CheckIcon,
   Clock4Icon,
   EllipsisVertical,
+  HashIcon,
   PlusIcon,
   SettingsIcon,
   ShuffleIcon,
@@ -77,11 +78,13 @@ function RouteComponent() {
         <UserAvatarDropdown />
       </AppHeader>
       <AddItemButton />
-      <div className="flex items-center justify-between px-4 pt-2">
-        <SortingHeader />
-        <div className="flex items-center gap-2">
-          <RandomizeSelectionButton />
-          <HeaderMenu />
+      <div className="flex items-center justify-center">
+        <div className="flex items-center w-full justify-between px-4 pt-2 max-w-7xl">
+          <SortingHeader />
+          <div className="flex items-center gap-2">
+            <RandomizeSelectionButton />
+            <HeaderMenu />
+          </div>
         </div>
       </div>
       <div className="w-full flex flex-col items-center">
@@ -100,12 +103,14 @@ const sortByIcon: Record<SortingOptions['sortBy'], React.ReactNode> = {
   duration: <Clock4Icon />,
   rating: <StarIcon />,
   dateAdded: <CalendarIcon />,
+  priority: <HashIcon />,
 };
 
 const sortByLabel: Record<SortingOptions['sortBy'], string> = {
   duration: 'Duration',
   rating: 'Rating',
   dateAdded: 'Date Added',
+  priority: 'Priority',
 };
 
 type SortingByOptionProps = {
@@ -206,6 +211,7 @@ function SortingHeader() {
           <SortingOption sortBy="duration" />
           <SortingOption sortBy="dateAdded" />
           <SortingOption sortBy="rating" />
+          <SortingOption sortBy="priority" />
         </DropdownMenuContent>
       </DropdownMenu>
       <Button variant="outline" size="icon" asChild>
@@ -266,7 +272,7 @@ function ItemsList() {
   );
 }
 
-function useListItemsArgs() {
+export function useListItemsArgs() {
   const listId = useListId();
   const deps = useLoaderDeps({ from: '/_app/list/$id' });
 

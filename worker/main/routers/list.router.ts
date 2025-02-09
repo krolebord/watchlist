@@ -157,19 +157,23 @@ export const listRouter = router({
     await ctx.db.delete(mainSchema.listItemsTable).where(eq(mainSchema.listItemsTable.id, input.itemId));
   }),
 
-  markAsWatched: listProcedure.input(z.object({ itemId: z.string() })).mutation(async ({ input, ctx }) => {
-    await ctx.db
-      .update(mainSchema.listItemsTable)
-      .set({ watchedAt: new Date() })
-      .where(eq(mainSchema.listItemsTable.id, input.itemId));
-  }),
+  setWatched: listProcedure
+    .input(z.object({ itemId: z.string(), watched: z.boolean() }))
+    .mutation(async ({ input, ctx }) => {
+      await ctx.db
+        .update(mainSchema.listItemsTable)
+        .set({ watchedAt: input.watched ? new Date() : null })
+        .where(eq(mainSchema.listItemsTable.id, input.itemId));
+    }),
 
-  markAsUnwatched: listProcedure.input(z.object({ itemId: z.string() })).mutation(async ({ input, ctx }) => {
-    await ctx.db
-      .update(mainSchema.listItemsTable)
-      .set({ watchedAt: null })
-      .where(eq(mainSchema.listItemsTable.id, input.itemId));
-  }),
+  setPriority: listProcedure
+    .input(z.object({ itemId: z.string(), priority: z.enum(['low', 'normal', 'high']) }))
+    .mutation(async ({ input, ctx }) => {
+      await ctx.db
+        .update(mainSchema.listItemsTable)
+        .set({ priority: input.priority === 'low' ? -1 : input.priority === 'normal' ? 0 : 1 })
+        .where(eq(mainSchema.listItemsTable.id, input.itemId));
+    }),
 
   getItems: listProcedure.input(itemsFilterSchema).query(async ({ ctx, input }) => {
     const { sortBy, sortOrder } = input;
@@ -202,5 +206,7 @@ function getItemsOrderByColumn(sortBy: FilteringOptions['sortBy']) {
       return mainSchema.listItemsTable.rating;
     case 'dateAdded':
       return mainSchema.listItemsTable.createdAt;
+    case 'priority':
+      return mainSchema.listItemsTable.priority;
   }
 }
