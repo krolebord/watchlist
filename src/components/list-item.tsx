@@ -1,6 +1,6 @@
 import { trpc } from '@/trpc';
 
-import { useListItemsArgs } from '@/routes/_app.list.$id';
+import { useListId } from '@/routes/_app.list.$id';
 import type { TrpcOutput } from '@/trpc';
 import { cn } from '@/utils/cn';
 import { formatDuration } from '@/utils/format-duration';
@@ -41,8 +41,7 @@ export function ListItemCard({ item, listId }: { item: ListItem; listId: string 
 
   const toggleItemSelection = useListStore((state) => state.toggleItemSelection);
 
-  const args = useListItemsArgs();
-  const setWatchedMutation = useSetWatchedMutation(args);
+  const setWatchedMutation = useSetWatchedMutation(listId);
 
   return (
     <ContextMenu>
@@ -157,12 +156,11 @@ type ItemMenuActioProps = {
 };
 
 type Utils = ReturnType<typeof trpc.useUtils>;
-type ListArgs = ReturnType<typeof useListItemsArgs>;
 
-function optimisticallyUpdateItems(utils: Utils, args: ListArgs, updateItems: (items: ListItem[]) => ListItem[]) {
+function optimisticallyUpdateItems(utils: Utils, listId: string, updateItems: (items: ListItem[]) => ListItem[]) {
   utils.list.getLists.cancel();
-  const previousItems = utils.list.getItems.getData(args);
-  utils.list.getItems.setData(args, (old) => {
+  const previousItems = utils.list.getItems.getData({ listId });
+  utils.list.getItems.setData({ listId }, (old) => {
     if (!old) return old;
 
     return updateItems(old);
@@ -173,11 +171,11 @@ function optimisticallyUpdateItems(utils: Utils, args: ListArgs, updateItems: (i
 
 function optimisticallyUpdateItem(
   utils: Utils,
-  args: ListArgs,
+  listId: string,
   itemId: string,
   updateItem: (item: ListItem) => Partial<ListItem>,
 ) {
-  return optimisticallyUpdateItems(utils, args, (old) => {
+  return optimisticallyUpdateItems(utils, listId, (old) => {
     const newItems = [...old];
     const itemIndex = newItems.findIndex((item) => item.id === itemId);
     if (itemIndex === -1) return newItems;
@@ -203,24 +201,25 @@ function ToggleItemSelectionMenuItem({ item }: ItemMenuActioProps) {
 }
 
 function DeleteMenuItem({ item }: ItemMenuActioProps) {
-  const args = useListItemsArgs();
+  const listId = useListId();
   const utils = trpc.useUtils();
   const removeItemMutation = trpc.list.removeItem.useMutation({
-    onMutate: ({ itemId }) => optimisticallyUpdateItems(utils, args, (old) => old.filter((item) => item.id !== itemId)),
+    onMutate: ({ itemId }) =>
+      optimisticallyUpdateItems(utils, listId, (old) => old.filter((item) => item.id !== itemId)),
     onError: (_, __, context) => {
       if (context?.previousItems) {
-        utils.list.getItems.setData(args, context.previousItems);
+        utils.list.getItems.setData({ listId }, context.previousItems);
       }
     },
     onSuccess: () => {
-      utils.list.getItems.invalidate({ listId: args.listId });
+      utils.list.getItems.invalidate({ listId });
     },
   });
 
   return (
     <DynamicMenuItem
       disabled={removeItemMutation.isPending}
-      onClick={() => removeItemMutation.mutate({ listId: args.listId, itemId: item.id })}
+      onClick={() => removeItemMutation.mutate({ listId, itemId: item.id })}
     >
       <TrashIcon />
       Delete
@@ -228,19 +227,19 @@ function DeleteMenuItem({ item }: ItemMenuActioProps) {
   );
 }
 
-function useSetWatchedMutation(args: ListArgs) {
+function useSetWatchedMutation(listId: string) {
   const utils = trpc.useUtils();
 
   return trpc.list.setWatched.useMutation({
     onMutate: ({ itemId, watched }) =>
-      optimisticallyUpdateItem(utils, args, itemId, () => ({ watchedAt: watched ? new Date() : null })),
+      optimisticallyUpdateItem(utils, listId, itemId, () => ({ watchedAt: watched ? new Date() : null })),
     onError: (_, __, context) => {
       if (context?.previousItems) {
-        utils.list.getItems.setData(args, context.previousItems);
+        utils.list.getItems.setData({ listId }, context.previousItems);
       }
     },
     onSuccess: () => {
-      utils.list.getItems.invalidate({ listId: args.listId });
+      utils.list.getItems.invalidate({ listId });
     },
   });
 }
@@ -248,13 +247,13 @@ function useSetWatchedMutation(args: ListArgs) {
 function SetWatchedMenuItem({ item }: ItemMenuActioProps) {
   const isWatched = !!item.watchedAt;
 
-  const args = useListItemsArgs();
-  const setWatchedMutation = useSetWatchedMutation(args);
+  const listId = useListId();
+  const setWatchedMutation = useSetWatchedMutation(listId);
 
   return isWatched ? (
     <DynamicMenuItem
       disabled={setWatchedMutation.isPending}
-      onClick={() => setWatchedMutation.mutate({ listId: args.listId, itemId: item.id, watched: false })}
+      onClick={() => setWatchedMutation.mutate({ listId, itemId: item.id, watched: false })}
     >
       <EyeOffIcon />
       <span>Mark as unwatched</span>
@@ -262,7 +261,7 @@ function SetWatchedMenuItem({ item }: ItemMenuActioProps) {
   ) : (
     <DynamicMenuItem
       disabled={setWatchedMutation.isPending}
-      onClick={() => setWatchedMutation.mutate({ listId: args.listId, itemId: item.id, watched: true })}
+      onClick={() => setWatchedMutation.mutate({ listId, itemId: item.id, watched: true })}
     >
       <CheckIcon />
       Mark as watched
@@ -271,19 +270,19 @@ function SetWatchedMenuItem({ item }: ItemMenuActioProps) {
 }
 
 function SetPriorityMenuItem({ item }: ItemMenuActioProps) {
-  const args = useListItemsArgs();
+  const listId = useListId();
   const utils = trpc.useUtils();
 
   const setPriorityMutation = trpc.list.setPriority.useMutation({
     onMutate: ({ itemId, priority }) =>
-      optimisticallyUpdateItem(utils, args, itemId, () => ({ priority: getPriorityValue(priority) })),
+      optimisticallyUpdateItem(utils, listId, itemId, () => ({ priority: getPriorityValue(priority) })),
     onError: (_, __, context) => {
       if (context?.previousItems) {
-        utils.list.getItems.setData(args, context.previousItems);
+        utils.list.getItems.setData({ listId }, context.previousItems);
       }
     },
     onSuccess: () => {
-      utils.list.getItems.invalidate({ listId: args.listId });
+      utils.list.getItems.invalidate({ listId });
     },
   });
 
@@ -294,21 +293,15 @@ function SetPriorityMenuItem({ item }: ItemMenuActioProps) {
         Set priority
       </DynamicMenuSubTrigger>
       <DynamicMenuSubContent>
-        <DynamicMenuItem
-          onClick={() => setPriorityMutation.mutate({ listId: args.listId, itemId: item.id, priority: 'high' })}
-        >
+        <DynamicMenuItem onClick={() => setPriorityMutation.mutate({ listId, itemId: item.id, priority: 'high' })}>
           {priorityColors.high.icon}
           High
         </DynamicMenuItem>
-        <DynamicMenuItem
-          onClick={() => setPriorityMutation.mutate({ listId: args.listId, itemId: item.id, priority: 'normal' })}
-        >
+        <DynamicMenuItem onClick={() => setPriorityMutation.mutate({ listId, itemId: item.id, priority: 'normal' })}>
           {priorityColors.normal.icon}
           Normal
         </DynamicMenuItem>
-        <DynamicMenuItem
-          onClick={() => setPriorityMutation.mutate({ listId: args.listId, itemId: item.id, priority: 'low' })}
-        >
+        <DynamicMenuItem onClick={() => setPriorityMutation.mutate({ listId, itemId: item.id, priority: 'low' })}>
           {priorityColors.low.icon}
           Low
         </DynamicMenuItem>

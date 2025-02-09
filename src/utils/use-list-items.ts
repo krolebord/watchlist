@@ -1,0 +1,54 @@
+import type { TrpcOutput } from '@/trpc';
+import { useSearch } from '@tanstack/react-router';
+import { useCallback } from 'react';
+import * as R from 'remeda';
+import { z } from 'zod';
+import { useListStore } from './list-store';
+
+export const itemsFilterSchema = z.object({
+  sortBy: z.enum(['duration', 'rating', 'dateAdded', 'priority']).default('dateAdded'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+});
+
+export function useSortedAndFilteredListItemsSelector() {
+  const { sortBy, sortOrder } = useSearch({ from: '/_app/list/$id' });
+
+  const randomizedItem = useListStore((x) => x.randomizedItem);
+  const searchQuery = useListStore((x) => x.searchQuery);
+
+  return useCallback(
+    (items: TrpcOutput['list']['getItems']) => {
+      if (!items) {
+        return [];
+      }
+
+      return R.pipe(
+        items,
+        R.filter((x) => (!searchQuery ? x.title.toLowerCase().includes(searchQuery.toLowerCase()) : true)),
+        R.sortBy(
+          [(x) => (x.id === randomizedItem ? -1 : 1), 'asc'],
+          [(x) => (x.watchedAt ? 1 : 0), 'asc'],
+          [
+            (x) => {
+              switch (sortBy) {
+                case 'dateAdded':
+                  return x.watchedAt ? x.watchedAt.getTime() : x.createdAt.getTime();
+                case 'duration':
+                  return x.duration ?? Number.MAX_SAFE_INTEGER;
+                case 'priority':
+                  return x.priority;
+                case 'rating':
+                  return x.rating ?? Number.MAX_SAFE_INTEGER;
+                default:
+                  sortBy satisfies never;
+                  return x.createdAt.getTime();
+              }
+            },
+            sortOrder,
+          ],
+        ),
+      );
+    },
+    [sortBy, sortOrder, searchQuery, randomizedItem],
+  );
+}

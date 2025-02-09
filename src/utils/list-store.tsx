@@ -13,22 +13,24 @@ const createListStore = ({ listId }: ListStoreProps) =>
         listId,
         selectedItems: [] as string[],
         randomizedItem: null as string | null,
+
         searchQuery: '',
       },
       (set) => ({
+        selectItems: (itemIds: string[]) => set({ selectedItems: itemIds }),
         toggleItemSelection: (itemId: string) =>
           set((state) => ({
             selectedItems: state.selectedItems.includes(itemId)
               ? state.selectedItems.filter((id) => id !== itemId)
               : [...state.selectedItems, itemId],
           })),
+        clearSelectedItems: () => set({ selectedItems: [] }),
+
         selectRandomFromSelectedItems: () =>
           set((state) => ({
             randomizedItem: state.selectedItems[Math.floor(Math.random() * state.selectedItems.length)],
           })),
         clearRandomizedItem: () => set({ randomizedItem: null }),
-        clearSelectedItems: () => set({ selectedItems: [] }),
-        selectItems: (itemIds: string[]) => set({ selectedItems: itemIds }),
 
         setSearchQuery: (query: string) => set({ searchQuery: query }),
       }),

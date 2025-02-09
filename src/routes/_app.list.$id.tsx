@@ -1,4 +1,3 @@
-import { itemsFilterSchema } from '@/../common/items-filter-schema';
 import { AddMovieDialog } from '@/components/add-movie-dialog';
 import { AppHeader, ProjectSelector, UserAvatarDropdown } from '@/components/app-layout';
 import { ListItemCard, useIsSelectionMode } from '@/components/list-item';
@@ -14,8 +13,9 @@ import { Input } from '@/components/ui/input';
 import { trpc } from '@/trpc';
 import { cn } from '@/utils/cn';
 import { ListStoreProvider, useListStore } from '@/utils/list-store';
+import { itemsFilterSchema, useSortedAndFilteredListItemsSelector } from '@/utils/use-list-items';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
-import { Link, createFileRoute, useLoaderDeps, useParams, useSearch } from '@tanstack/react-router';
+import { Link, createFileRoute, useParams, useSearch } from '@tanstack/react-router';
 import { zodValidator } from '@tanstack/zod-adapter';
 import {
   ArrowDownIcon,
@@ -38,10 +38,10 @@ import type { z } from 'zod';
 export const Route = createFileRoute('/_app/list/$id')({
   component: RouteComponent,
   validateSearch: zodValidator(itemsFilterSchema),
-  loaderDeps: ({ search: { sortBy, sortOrder } }) => ({ sortBy, sortOrder }),
-  loader: async ({ params, context, deps }) => {
+  loaderDeps: () => ({}),
+  loader: async ({ params, context }) => {
     await Promise.all([
-      context.trpc.list.getItems.prefetch({ listId: params.id, ...deps }),
+      context.trpc.list.getItems.prefetch({ listId: params.id }),
       context.trpc.list.getLists.prefetch(),
     ]);
     return {
@@ -140,9 +140,13 @@ function HeaderMenu({ className }: { className?: string }) {
   const selectRandomFromSelectedItems = useListStore((state) => state.selectRandomFromSelectedItems);
   const clearRandomizedItem = useListStore((state) => state.clearRandomizedItem);
 
-  const { data: allItems = [] } = trpc.list.getItems.useQuery(useListItemsArgs(), {
-    select: (data) => data.map((item) => item.id),
-  });
+  const listId = useListId();
+  const { data: allItems = [] } = trpc.list.getItems.useQuery(
+    { listId },
+    {
+      select: (data) => data.map((item) => item.id),
+    },
+  );
 
   return (
     <DropdownMenu>
@@ -241,9 +245,12 @@ function SearchInput({ className }: { className?: string }) {
 function AddItemButton() {
   const listId = useListId();
 
-  const { data: alreadyAddedItems = [] } = trpc.list.getItems.useQuery(useListItemsArgs(), {
-    select: (data) => data.map((item) => item.tmdbId).filter((id) => id !== null),
-  });
+  const { data: alreadyAddedItems = [] } = trpc.list.getItems.useQuery(
+    { listId },
+    {
+      select: (data) => data.map((item) => item.tmdbId).filter((id) => id !== null),
+    },
+  );
 
   return (
     <AddMovieDialog listId={listId} alreadyAddedItems={alreadyAddedItems} asChild>
@@ -256,7 +263,12 @@ function AddItemButton() {
 
 function ItemsList() {
   const listId = useListId();
-  const { data: items } = trpc.list.getItems.useQuery(useListItemsArgs());
+  const { data: items } = trpc.list.getItems.useQuery(
+    { listId },
+    {
+      select: useSortedAndFilteredListItemsSelector(),
+    },
+  );
 
   const selectedRandomizedItem = useListStore((state) => state.randomizedItem);
   const searchQuery = useListStore((state) => state.searchQuery);
@@ -290,11 +302,4 @@ function ItemsList() {
       ))}
     </div>
   );
-}
-
-export function useListItemsArgs() {
-  const listId = useListId();
-  const deps = useLoaderDeps({ from: '/_app/list/$id' });
-
-  return { listId, ...deps };
 }

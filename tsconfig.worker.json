@@ -16,5 +16,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["worker", "worker-configuration.d.ts", "common"]
+  "include": ["worker", "worker-configuration.d.ts"]
 }

@@ -1,7 +1,6 @@
 import { TRPCError } from '@trpc/server';
-import { and, asc, count, desc, eq, sql } from 'drizzle-orm';
+import { and, count, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { itemsFilterSchema } from '../../../common/items-filter-schema';
 import { mainSchema } from '../db';
 import { listProcedure, protectedProcedure, router } from '../trpc';
 import { sendMagicLinkEmail } from './auth.router';
@@ -175,38 +174,10 @@ export const listRouter = router({
         .where(eq(mainSchema.listItemsTable.id, input.itemId));
     }),
 
-  getItems: listProcedure.input(itemsFilterSchema).query(async ({ ctx, input }) => {
-    const { sortBy, sortOrder } = input;
-
-    const sortByColumn = getItemsOrderByColumn(sortBy);
-
+  getItems: listProcedure.query(async ({ ctx, input }) => {
     const f = mainSchema.listItemsTable;
-    const items = await ctx.db
-      .select()
-      .from(f)
-      .where(eq(f.listId, input.listId))
-      .orderBy(
-        sql`case when ${f.watchedAt} is not null then 1 else 0 end`,
-        sortOrder === 'asc' ? asc(sortByColumn) : desc(sortByColumn),
-        desc(f.watchedAt),
-        f.order,
-      );
+    const items = await ctx.db.select().from(f).where(eq(f.listId, input.listId));
 
     return items;
   }),
 });
-
-type FilteringOptions = z.infer<typeof itemsFilterSchema>;
-
-function getItemsOrderByColumn(sortBy: FilteringOptions['sortBy']) {
-  switch (sortBy) {
-    case 'duration':
-      return mainSchema.listItemsTable.duration;
-    case 'rating':
-      return mainSchema.listItemsTable.rating;
-    case 'dateAdded':
-      return mainSchema.listItemsTable.createdAt;
-    case 'priority':
-      return mainSchema.listItemsTable.priority;
-  }
-}

@@ -8,7 +8,7 @@ export const usersTable = sqliteTable('users', (x) => ({
   name: x.text().notNull(),
   email: x.text().notNull(),
 
-  createdAt: x.integer({ mode: 'timestamp' }).notNull().default(now),
+  createdAt: x.integer({ mode: 'timestamp_ms' }).notNull().default(now),
   updatedAt: x
     .integer({ mode: 'timestamp' })
     .notNull()
@@ -27,7 +27,7 @@ export const sessionsTable = sqliteTable('sessions', (x) => ({
     .notNull()
     .references(() => usersTable.id, { onDelete: 'cascade' }),
   validUntil: x.integer({ mode: 'timestamp' }).notNull(),
-  createdAt: x.integer({ mode: 'timestamp' }).notNull().default(now),
+  createdAt: x.integer({ mode: 'timestamp_ms' }).notNull().default(now),
 }));
 export const sessionsRelations = relations(sessionsTable, ({ one }) => ({
   user: one(usersTable, {
@@ -43,7 +43,7 @@ export const verificationsTable = sqliteTable('verifications', (x) => ({
   target: x.text().notNull(),
   token: x.text().notNull().unique(),
 
-  createdAt: x.integer({ mode: 'timestamp' }).notNull().default(now),
+  createdAt: x.integer({ mode: 'timestamp_ms' }).notNull().default(now),
   expiredAt: x.integer({ mode: 'timestamp' }).notNull(),
   usedAt: x.integer({ mode: 'timestamp' }),
   isValid: x.integer({ mode: 'boolean' }).notNull().default(true),
@@ -61,7 +61,7 @@ export const verificationsRelations = relations(verificationsTable, ({ one }) =>
 export const listsTable = sqliteTable('lists', (x) => ({
   id: x.text('id').primaryKey(),
   name: x.text().notNull(),
-  createdAt: x.integer({ mode: 'timestamp' }).notNull().default(now),
+  createdAt: x.integer({ mode: 'timestamp_ms' }).notNull().default(now),
 }));
 export const listsRelations = relations(listsTable, ({ many }) => ({
   usersToLists: many(usersToListsTable),
@@ -114,7 +114,7 @@ export const listItemsTable = sqliteTable('list_items', (x) => ({
 
   watchedAt: x.integer({ mode: 'timestamp' }),
 
-  createdAt: x.integer({ mode: 'timestamp' }).notNull().default(now),
+  createdAt: x.integer({ mode: 'timestamp_ms' }).notNull().default(now),
 }));
 
 export const listItemsRelations = relations(listItemsTable, ({ many }) => ({
