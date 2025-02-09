@@ -206,17 +206,17 @@ function ListItemMenuContent({ type, item, listId }: ListItemMenuContentProps) {
           Set priority
         </DynamicMenuSubTrigger>
         <DynamicMenuSubContent>
-          <DynamicMenuItem onClick={() => setPriorityMutation.mutate({ listId, itemId: item.id, priority: 'low' })}>
-            {priorityColors.low.icon}
-            Low
+          <DynamicMenuItem onClick={() => setPriorityMutation.mutate({ listId, itemId: item.id, priority: 'high' })}>
+            {priorityColors.high.icon}
+            High
           </DynamicMenuItem>
           <DynamicMenuItem onClick={() => setPriorityMutation.mutate({ listId, itemId: item.id, priority: 'normal' })}>
             {priorityColors.normal.icon}
             Normal
           </DynamicMenuItem>
-          <DynamicMenuItem onClick={() => setPriorityMutation.mutate({ listId, itemId: item.id, priority: 'high' })}>
-            {priorityColors.high.icon}
-            High
+          <DynamicMenuItem onClick={() => setPriorityMutation.mutate({ listId, itemId: item.id, priority: 'low' })}>
+            {priorityColors.low.icon}
+            Low
           </DynamicMenuItem>
         </DynamicMenuSubContent>
       </DynamicMenuSub>
