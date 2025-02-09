@@ -10,7 +10,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import { trpc } from '@/trpc';
+import { cn } from '@/utils/cn';
 import { ListStoreProvider, useListStore } from '@/utils/list-store';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { Link, createFileRoute, useLoaderDeps, useParams, useSearch } from '@tanstack/react-router';
@@ -26,6 +28,8 @@ import {
   PlusIcon,
   SettingsIcon,
   ShuffleIcon,
+  SquareDashed,
+  SquareDashedMousePointerIcon,
   StarIcon,
 } from 'lucide-react';
 import { useMemo } from 'react';
@@ -79,12 +83,10 @@ function RouteComponent() {
       </AppHeader>
       <AddItemButton />
       <div className="flex items-center justify-center">
-        <div className="flex items-center w-full justify-between px-4 pt-2 max-w-7xl">
+        <div className="items-center gap-4 w-full justify-start px-4 pt-2 max-w-7xl grid grid-cols-[1fr_auto] sm:grid-cols-[auto_1fr_auto]">
           <SortingHeader />
-          <div className="flex items-center gap-2">
-            <RandomizeSelectionButton />
-            <HeaderMenu />
-          </div>
+          <SearchInput className="max-sm:col-span-2 max-sm:row-start-2 sm:max-w-52" />
+          <HeaderMenu />
         </div>
       </div>
       <div className="w-full flex flex-col items-center">
@@ -129,46 +131,14 @@ function SortingOption({ sortBy }: SortingByOptionProps) {
   );
 }
 
-function RandomizeSelectionButton() {
-  const selectedRandomItem = useListStore((state) => state.randomizedItem);
-  const isSelectionMode = useIsSelectionMode();
-
-  const randomizeSelection = useListStore((state) => state.selectRandomFromSelectedItems);
-  const clearRandomizedItem = useListStore((state) => state.clearRandomizedItem);
-
-  if (!isSelectionMode && !selectedRandomItem) {
-    return null;
-  }
-
-  return (
-    <Button
-      variant="outline"
-      onClick={() => {
-        if (!selectedRandomItem) {
-          randomizeSelection();
-        } else {
-          clearRandomizedItem();
-        }
-      }}
-    >
-      {selectedRandomItem ? (
-        <>
-          <CheckIcon /> Clear
-        </>
-      ) : (
-        <>
-          <ShuffleIcon /> Select random{' '}
-        </>
-      )}
-    </Button>
-  );
-}
-
-function HeaderMenu() {
-  const listId = useListId();
+function HeaderMenu({ className }: { className?: string }) {
   const selectAllItems = useListStore((state) => state.selectItems);
   const clearSelectedItems = useListStore((state) => state.clearSelectedItems);
   const isSelectionMode = useIsSelectionMode();
+  const isRandomizedItem = useListStore((state) => !!state.randomizedItem);
+
+  const selectRandomFromSelectedItems = useListStore((state) => state.selectRandomFromSelectedItems);
+  const clearRandomizedItem = useListStore((state) => state.clearRandomizedItem);
 
   const { data: allItems = [] } = trpc.list.getItems.useQuery(useListItemsArgs(), {
     select: (data) => data.map((item) => item.id),
@@ -176,18 +146,49 @@ function HeaderMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild className={cn('shrink-0', className)}>
         <Button variant="outline" size="icon">
           <EllipsisVertical />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => selectAllItems(allItems)}>
-          <PlusIcon /> Select all
-        </DropdownMenuItem>
-        {isSelectionMode && (
-          <DropdownMenuItem onClick={() => clearSelectedItems()}>
-            <CheckIcon /> Clear selection
+        {isSelectionMode ? (
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.preventDefault();
+              clearSelectedItems();
+            }}
+          >
+            <SquareDashed /> Clear selection
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.preventDefault();
+              selectAllItems(allItems);
+            }}
+          >
+            <SquareDashedMousePointerIcon /> Select all
+          </DropdownMenuItem>
+        )}
+        {isSelectionMode && !isRandomizedItem && (
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.preventDefault();
+              selectRandomFromSelectedItems();
+            }}
+          >
+            <ShuffleIcon /> Select random
+          </DropdownMenuItem>
+        )}
+        {isRandomizedItem && (
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.preventDefault();
+              clearRandomizedItem();
+            }}
+          >
+            <CheckIcon /> Clear randomized
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>
@@ -195,11 +196,11 @@ function HeaderMenu() {
   );
 }
 
-function SortingHeader() {
+function SortingHeader({ className }: { className?: string }) {
   const { sortBy, sortOrder } = useSearch({ from: '/_app/list/$id' });
 
   return (
-    <div className="flex items-center gap-1">
+    <div className={cn('flex items-center gap-1', className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline">
@@ -220,6 +221,20 @@ function SortingHeader() {
         </Link>
       </Button>
     </div>
+  );
+}
+
+function SearchInput({ className }: { className?: string }) {
+  const searchQuery = useListStore((state) => state.searchQuery);
+  const setSearchQuery = useListStore((state) => state.setSearchQuery);
+
+  return (
+    <Input
+      placeholder="Search..."
+      className={className}
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+    />
   );
 }
 
@@ -244,19 +259,24 @@ function ItemsList() {
   const { data: items } = trpc.list.getItems.useQuery(useListItemsArgs());
 
   const selectedRandomizedItem = useListStore((state) => state.randomizedItem);
-
+  const searchQuery = useListStore((state) => state.searchQuery);
   const orderedItems = useMemo(() => {
-    if (!selectedRandomizedItem || !items) {
+    if (!items) {
       return items ?? [];
     }
 
-    const selectedItemIndex = items.findIndex((item) => item.id === selectedRandomizedItem);
-    const newItems = [...items];
-    newItems.splice(selectedItemIndex, 1);
-    newItems.unshift(items[selectedItemIndex]);
+    const newItems = searchQuery
+      ? [...items.filter((item) => item.title.toLowerCase().includes(searchQuery.toLowerCase()))]
+      : [...items];
+
+    if (selectedRandomizedItem) {
+      const selectedItemIndex = items.findIndex((item) => item.id === selectedRandomizedItem);
+      newItems.splice(selectedItemIndex, 1);
+      newItems.unshift(items[selectedItemIndex]);
+    }
 
     return newItems;
-  }, [items, selectedRandomizedItem]);
+  }, [items, selectedRandomizedItem, searchQuery]);
 
   const [animateRef] = useAutoAnimate();
 
