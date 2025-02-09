@@ -1,11 +1,11 @@
 {
-  "short_name": "WAT",
+  "short_name": "watchlist",
   "name": "watchlist",
   "start_url": "/",
-  "display_override": ["fullscreen", "minimal-ui"],
+  "display_override": ["standalone"],
   "display": "standalone",
   "orientation": "portrait",
-  "theme_color": "#8800ff",
+  "theme_color": "#0d0713",
   "background_color": "#0d0713",
   "icons": [
     { "src": "/favicon.ico", "type": "image/x-icon", "sizes": "16x16 32x32" },
