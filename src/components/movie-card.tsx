@@ -1,8 +1,4 @@
-import type { TrpcOutput } from '@/trpc';
 import { cn } from '@/utils/cn';
-import { format } from 'date-fns';
-import { CheckIcon } from 'lucide-react';
-import { motion } from 'motion/react';
 
 export function VoteAverage({ voteAverage, className }: { voteAverage: number; className: string }) {
   const score = Math.round(voteAverage * 10);

@@ -1,4 +1,4 @@
-import { type MovieWithMediaType, TMDB, type TVWithMediaType } from 'tmdb-ts';
+import type { MovieWithMediaType, TVWithMediaType } from 'tmdb-ts';
 import { z } from 'zod';
 import { publicProcedure, router } from '../trpc';
 

@@ -1,4 +1,4 @@
-import { redirect, useLoaderData, useRouteContext } from '@tanstack/react-router';
+import { redirect, useLoaderData } from '@tanstack/react-router';
 
 export function useUser() {
   const context = useLoaderData({ from: '/_app' });

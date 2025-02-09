@@ -5,11 +5,9 @@ import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { keepPreviousData } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { CheckIcon, XIcon } from 'lucide-react';
-import { PlusIcon } from 'lucide-react';
 import { useRef } from 'react';
 import { useState } from 'react';
 import { VoteAverage } from './movie-card';
-import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Input } from './ui/input';
 

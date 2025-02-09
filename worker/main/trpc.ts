@@ -7,8 +7,8 @@ import superjson from 'superjson';
 import { TMDB } from 'tmdb-ts';
 import { z } from 'zod';
 import { EmailService } from '../emails/emails';
-import { type UserSession, getSessionId, getValidUserSession } from '../utils/auth';
-import { type MainDb, createDb, mainSchema } from './db';
+import { getSessionId, getValidUserSession } from '../utils/auth';
+import { createDb, mainSchema } from './db';
 
 export function createContext({
   req,

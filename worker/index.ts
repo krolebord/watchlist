@@ -1,10 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
-import { getServerByName } from 'partyserver';
-import { createDb } from './main/db';
 import { mainRouter } from './main/router';
 import { createContext } from './main/trpc';
-import { getSessionId, getValidUserSession } from './utils/auth';
 import type { ServerTimings } from './utils/server-timings';
 
 const asyncLocalStorage = new AsyncLocalStorage<{ timings: ServerTimings }>();

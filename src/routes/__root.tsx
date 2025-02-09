@@ -1,8 +1,6 @@
-import { Button } from '@/components/ui/button';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { Link, Outlet, createRootRouteWithContext } from '@tanstack/react-router';
+import { Outlet, createRootRouteWithContext } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
-import { queryClient, trpc, type trpcClient, type trpcUtils } from '../trpc';
+import type { trpcClient, trpcUtils } from '../trpc';
 
 type RouterContext = {
   trpc: typeof trpcUtils;

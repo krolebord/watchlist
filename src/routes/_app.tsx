@@ -1,27 +1,4 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { trpc } from '@/trpc';
-import { useUser } from '@/utils/use-user';
-import {
-  Link,
-  Outlet,
-  createFileRoute,
-  redirect,
-  useLoaderData,
-  useMatch,
-  useMatches,
-  useNavigate,
-  useRouteContext,
-} from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
+import { Outlet, createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_app')({
   component: RouteComponent,

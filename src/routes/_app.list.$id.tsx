@@ -3,7 +3,6 @@ import { AddMovieDialog } from '@/components/add-movie-dialog';
 import { AppHeader, ProjectSelector, UserAvatarDropdown } from '@/components/app-layout';
 import { ListItemCard, useIsSelectionMode } from '@/components/list-item';
 import { ListSettingsSheet } from '@/components/list-settings-sheet';
-import { VoteAverage } from '@/components/movie-card';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,12 +10,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { type TrpcOutput, trpc } from '@/trpc';
+import { trpc } from '@/trpc';
 import { ListStoreProvider, useListStore } from '@/utils/list-store';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
-import { Link, createFileRoute, useLoaderData, useLoaderDeps, useParams, useSearch } from '@tanstack/react-router';
+import { Link, createFileRoute, useLoaderDeps, useParams, useSearch } from '@tanstack/react-router';
 import { zodValidator } from '@tanstack/zod-adapter';
-import { format } from 'date-fns';
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -24,17 +22,12 @@ import {
   CheckIcon,
   Clock4Icon,
   EllipsisVertical,
-  EyeOffIcon,
-  MoreHorizontalIcon,
-  MoreVerticalIcon,
   PlusIcon,
   SettingsIcon,
   ShuffleIcon,
   StarIcon,
-  TrashIcon,
-  XIcon,
 } from 'lucide-react';
-import { RefObject, useMemo } from 'react';
+import { useMemo } from 'react';
 import type { z } from 'zod';
 
 export const Route = createFileRoute('/_app/list/$id')({

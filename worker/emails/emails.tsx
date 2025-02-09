@@ -1,4 +1,3 @@
-import { render } from '@react-email/render';
 import React from 'react';
 import { Resend } from 'resend';
 import MagicLinkEmail, { type MagicLinkEmailProps } from './magic-link.email';
