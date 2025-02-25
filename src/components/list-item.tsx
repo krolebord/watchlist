@@ -48,10 +48,18 @@ export function ListItemCard({ item, listId }: { item: ListItem; listId: string 
       <ContextMenuTrigger asChild>
         <div
           className={cn(
-            'bg-card rounded-md shadow-sm border border-border overflow-hidden relative group w-full grid grid-cols-3',
+            'bg-card rounded-md relative shadow-sm border border-border overflow-hidden group w-full grid grid-cols-3',
             isRandomizedItem && 'border-primary',
           )}
         >
+          {item.posterUrl && (
+            <img
+              className="object-fill inset-0 absolute w-full h-full opacity-30 blur-3xl pointer-events-none"
+              draggable={false}
+              src={item.posterUrl}
+              alt={item.title}
+            />
+          )}
           <div
             className={cn('w-full aspect-[2/3] overflow-hidden relative cursor-pointer')}
             onClick={() => {

@@ -12,6 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { trpc } from '@/trpc';
 import { cn } from '@/utils/cn';
+import { lastOpenedList } from '@/utils/last-opened-list';
 import { ListStoreProvider, useListStore } from '@/utils/list-store';
 import { itemsFilterSchema, useSortedAndFilteredListItemsSelector } from '@/utils/use-list-items';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
@@ -40,6 +41,7 @@ export const Route = createFileRoute('/_app/list/$id')({
   validateSearch: zodValidator(itemsFilterSchema),
   loaderDeps: () => ({}),
   loader: async ({ params, context }) => {
+    lastOpenedList.set(params.id);
     await Promise.all([
       context.trpc.list.getItems.prefetch({ listId: params.id }),
       context.trpc.list.getLists.prefetch(),
@@ -82,8 +84,8 @@ function RouteComponent() {
         <UserAvatarDropdown />
       </AppHeader>
       <AddItemButton />
-      <div className="flex items-center justify-center">
-        <div className="items-center gap-4 w-full justify-start px-4 pt-2 max-w-7xl grid grid-cols-[1fr_auto] sm:grid-cols-[auto_1fr_auto]">
+      <div className="flex items-center justify-center top-0 sticky z-10 bg-background/80 pb-2 backdrop-blur-md">
+        <div className="items-center gap-x-4 w-full justify-start px-4 pt-2 max-w-7xl grid grid-cols-[1fr_auto] sm:grid-cols-[auto_1fr_auto] gap-y-1">
           <SortingHeader />
           <SearchInput className="max-sm:col-span-2 max-sm:row-start-2 sm:max-w-52" />
           <HeaderMenu />
@@ -294,7 +296,7 @@ function ItemsList() {
 
   return (
     <div
-      className="w-full flex flex-wrap justify-center md:grid md:grid-cols-2 xl:grid-cols-3 gap-4 px-4 pt-4 pb-20 max-w-7xl"
+      className="w-full flex flex-wrap justify-center md:grid md:grid-cols-2 xl:grid-cols-3 gap-4 px-4 pt-2 pb-20 max-w-7xl"
       ref={animateRef}
     >
       {orderedItems.map((item) => (
