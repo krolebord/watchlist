@@ -1,15 +1,19 @@
 import { trpc } from '@/trpc';
 import type { TrpcOutput } from '@/trpc';
+import { cn } from '@/utils/cn';
 import { useListStore } from '@/utils/list-store';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FilmIcon, TvIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { CalendarIcon, FilmIcon, TvIcon } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { type ControllerRenderProps, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from './ui/button';
+import { Calendar } from './ui/calendar';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form';
 import { Input } from './ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Textarea } from './ui/textarea';
 
@@ -21,6 +25,7 @@ const editItemSchema = z.object({
   duration: z.coerce.number().int().min(0).optional(),
   type: z.enum(['movie', 'tv']),
   episodeCount: z.coerce.number().int().min(0).optional(),
+  watchedAt: z.date().nullable().optional(),
 });
 
 type EditItemFormValues = z.infer<typeof editItemSchema>;
@@ -45,6 +50,7 @@ export function EditItemDialog({ items, listId }: EditItemDialogProps) {
       duration: undefined,
       type: 'movie',
       episodeCount: undefined,
+      watchedAt: null,
     },
   });
 
@@ -56,6 +62,7 @@ export function EditItemDialog({ items, listId }: EditItemDialogProps) {
         duration: item.duration || undefined,
         type: item.type || 'movie',
         episodeCount: item.episodeCount || undefined,
+        watchedAt: item.watchedAt ? new Date(item.watchedAt) : null,
       });
     }
   }, [form, item]);
@@ -78,6 +85,7 @@ export function EditItemDialog({ items, listId }: EditItemDialogProps) {
       duration: values.duration,
       type: values.type,
       episodeCount: values.episodeCount,
+      watchedAt: values.watchedAt,
     });
   };
 
@@ -195,6 +203,47 @@ export function EditItemDialog({ items, listId }: EditItemDialogProps) {
                   )}
                 />
               )}
+              <FormField
+                control={form.control}
+                name="watchedAt"
+                render={({ field }: { field: ControllerRenderProps<EditItemFormValues, 'watchedAt'> }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Watched Date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}
+                          >
+                            {field.value ? format(field.value, 'PPP') : <span>Not watched</span>}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value || undefined}
+                          onSelect={(date) => field.onChange(date)}
+                          disabled={(date) => date > new Date()}
+                          initialFocus
+                        />
+                        <div className="p-3 border-t border-border">
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-center"
+                            onClick={() => field.onChange(null)}
+                          >
+                            Clear
+                          </Button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <DialogFooter>
                 <Button
                   type="button"

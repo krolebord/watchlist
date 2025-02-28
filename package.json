@@ -76,6 +76,7 @@
     "partyserver": "^0.0.64",
     "partysocket": "^1.0.3",
     "react": "^19.0.0",
+    "react-day-picker": "8.10.1",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
     "remeda": "^2.21.0",

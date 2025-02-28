@@ -220,6 +220,7 @@ export const listRouter = router({
         duration: z.number().int().min(0).optional(),
         type: z.enum(['movie', 'tv']).optional(),
         episodeCount: z.number().int().min(0).optional(),
+        watchedAt: z.date().nullable().optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -231,6 +232,7 @@ export const listRouter = router({
           ...(input.duration ? { duration: input.duration } : {}),
           ...(input.type ? { type: input.type } : {}),
           ...(input.episodeCount ? { episodeCount: input.episodeCount } : {}),
+          ...(input.watchedAt !== undefined ? { watchedAt: input.watchedAt } : {}),
         })
         .where(eq(mainSchema.listItemsTable.id, input.itemId));
     }),
