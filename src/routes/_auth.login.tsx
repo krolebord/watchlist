@@ -32,11 +32,11 @@ function RouteComponent() {
   };
 
   return (
-    <div className="w-full flex-col flex items-center gap-6 justify-center">
-      <h1 className="text-3xl font-bold">Magic Link Login</h1>
+    <div className="flex w-full flex-col items-center justify-center gap-6">
+      <h1 className="font-bold text-3xl">Magic Link Login</h1>
       {!sendLinkMutation.isSuccess && (
-        <form onSubmit={handleSubmit(onSubmit)} className="flex max-w-sm w-full flex-col gap-4 p-4 rounded-md">
-          <div className="flex flex-col gap-1 justify-between min-h-16 text-center">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex w-full max-w-sm flex-col gap-4 rounded-md p-4">
+          <div className="flex min-h-16 flex-col justify-between gap-1 text-center">
             <Input {...register('email')} placeholder="example@gmail.com" autoFocus className="text-center" />
             <p className="text-red-500 text-sm">{errors.email?.message}</p>
           </div>

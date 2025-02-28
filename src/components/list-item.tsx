@@ -51,27 +51,27 @@ export function ListItemCard({ item, listId }: { item: ListItem; listId: string 
       <ContextMenuTrigger asChild>
         <div
           className={cn(
-            'bg-card rounded-md relative shadow-sm border border-border overflow-hidden group w-full grid grid-cols-3',
+            'group relative grid w-full grid-cols-3 overflow-hidden rounded-md border border-border bg-card shadow-sm',
             isRandomizedItem && 'border-primary',
           )}
         >
           {item.posterUrl && (
             <img
-              className="object-fill inset-0 absolute w-full h-full opacity-30 blur-3xl pointer-events-none"
+              className="pointer-events-none absolute inset-0 h-full w-full object-fill opacity-30 blur-3xl"
               draggable={false}
               src={item.posterUrl}
               alt={item.title}
             />
           )}
           <div
-            className={cn('w-full aspect-[2/3] overflow-hidden relative cursor-pointer')}
+            className={cn('relative aspect-[2/3] w-full cursor-pointer overflow-hidden')}
             onClick={() => {
               toggleItemSelection(item.id);
             }}
           >
             {item.posterUrl && (
               <img
-                className="object-cover w-full h-full select-none"
+                className="h-full w-full select-none object-cover"
                 draggable={false}
                 src={item.posterUrl}
                 alt={item.title}
@@ -84,12 +84,12 @@ export function ListItemCard({ item, listId }: { item: ListItem; listId: string 
             <PriorityBadge className="absolute bottom-2 left-2" priority={item.priority} />
 
             {(isWatched || isSelected) && (
-              <div className="absolute top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center">
+              <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center bg-black/50">
                 {isWatched && <CheckIcon className="!size-10 text-green-500" />}
               </div>
             )}
             {isSelected && (
-              <p className="absolute top-2 left-2 flex items-center justify-center size-8 bg-primary rounded-full text-white select-none">
+              <p className="absolute top-2 left-2 flex size-8 select-none items-center justify-center rounded-full bg-primary text-white">
                 <CheckIcon />
               </p>
             )}
@@ -102,11 +102,11 @@ export function ListItemCard({ item, listId }: { item: ListItem; listId: string 
                 target="_blank"
                 rel="noreferrer"
                 tabIndex={-1}
-                className="font-semibold truncate cursor-pointer"
+                className="cursor-pointer truncate font-semibold"
               >
                 {item.title}
               </a>
-              <p className="text-sm text-muted-foreground flex gap-y-2 gap-x-4 flex-wrap">
+              <p className="flex flex-wrap gap-x-4 gap-y-2 text-muted-foreground text-sm">
                 {!!item.releaseDate && (
                   <span className="flex items-center gap-1">
                     <CalendarIcon className="!size-4" /> {format(new Date(item.releaseDate), 'y')}
@@ -129,7 +129,7 @@ export function ListItemCard({ item, listId }: { item: ListItem; listId: string 
                 )}
               </p>
             </div>
-            <div className="flex gap-2 justify-end">
+            <div className="flex justify-end gap-2">
               {!isWatched && (
                 <Button
                   variant="ghost"
@@ -393,7 +393,7 @@ export function PriorityBadge({ priority, className }: { priority: number; class
   return (
     <p
       className={cn(
-        'flex items-center justify-center size-8 rounded-full border-2 bg-black select-none [&_svg]:size-5 [&_svg]:shrink-0',
+        'flex size-8 select-none items-center justify-center rounded-full border-2 bg-black [&_svg]:size-5 [&_svg]:shrink-0',
         text,
         border,
         className,

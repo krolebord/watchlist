@@ -10,7 +10,7 @@ function RouteComponent() {
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 30 10"
-        className="h-32 w-[500px] blur-3xl text-primary absolute -top-16 -z-10"
+        className="-top-16 -z-10 absolute h-32 w-[500px] text-primary blur-3xl"
       >
         <title>Background</title>
         <ellipse cx="15" cy="5" rx="15" ry="5" fill="currentColor" />

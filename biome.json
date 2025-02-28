@@ -29,6 +29,9 @@
       },
       "correctness": {
         "noUnusedImports": "warn"
+      },
+      "nursery": {
+        "useSortedClasses": "warn"
       }
     }
   },

@@ -6,7 +6,7 @@ export function VoteAverage({ voteAverage, className }: { voteAverage: number; c
   return (
     <p
       className={cn(
-        'flex items-center justify-center size-8 bg-black rounded-full border-2 text-white select-none',
+        'flex size-8 select-none items-center justify-center rounded-full border-2 bg-black text-white',
         border,
         className,
       )}

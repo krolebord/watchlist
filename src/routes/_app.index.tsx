@@ -22,10 +22,10 @@ function RouteComponent() {
   return (
     <>
       <AppHeader>
-        <h1 className="text-2xl font-bold">watchlist</h1>
+        <h1 className="font-bold text-2xl">watchlist</h1>
         <UserAvatarDropdown />
       </AppHeader>
-      <div className="flex flex-col items-center pt-6 sm:pt-14 gap-6">
+      <div className="flex flex-col items-center gap-6 pt-6 sm:pt-14">
         <div className="flex flex-col gap-2">
           <p className="text-center font-semibold">Select a list</p>
           <ProjectSelector showCreate={false} />
@@ -70,7 +70,7 @@ function CreateListForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-row gap-2">
       <Input {...register('name')} placeholder="Create a new list" />
-      <Button type="submit" disabled={createListMutation.isPending} className="p-0 aspect-square">
+      <Button type="submit" disabled={createListMutation.isPending} className="aspect-square p-0">
         <PlusIcon className="!size-6" />
       </Button>
     </form>

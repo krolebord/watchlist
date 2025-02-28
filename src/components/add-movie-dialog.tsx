@@ -66,10 +66,10 @@ export function AddMovieDialog({ listId, asChild, children, alreadyAddedItems }:
       <DialogTrigger asChild={asChild}>{children}</DialogTrigger>
       <DialogContent
         noClose
-        className="h-screen max-h-[calc(100dvh)] sm:h-[80vh] w-screen sm:max-w-[480px] md:max-w-[700px] lg:max-w-[900px] flex flex-col items-start justify-start content-start p-2 sm:p-4"
+        className="flex h-screen max-h-[calc(100dvh)] w-screen flex-col content-start items-start justify-start p-2 sm:h-[80vh] sm:max-w-[480px] sm:p-4 md:max-w-[700px] lg:max-w-[900px]"
       >
         <DialogTitle hidden>Add a movie</DialogTitle>
-        <div className="w-full flex flex-row gap-3 items-center">
+        <div className="flex w-full flex-row items-center gap-3">
           <Input
             placeholder="Search for a movie"
             className="min-h-10"
@@ -83,11 +83,11 @@ export function AddMovieDialog({ listId, asChild, children, alreadyAddedItems }:
         </div>
         <div
           ref={animateRef}
-          className="flex flex-row py-1 flex-wrap gap-4 overflow-y-auto overflow-x-hidden content-start justify-center items-start scrollbar w-full"
+          className="scrollbar flex w-full flex-row flex-wrap content-start items-start justify-center gap-4 overflow-y-auto overflow-x-hidden py-1"
         >
           {searchItems?.map((result) => (
             <SearchCard
-              className="sm:w-48 w-[40vw]"
+              className="w-[40vw] sm:w-48"
               key={result.tmdbId}
               movie={result}
               onClick={({ isKeyboard }) => handleAddMovie(result, isKeyboard)}
@@ -112,8 +112,8 @@ function SearchCard({
     <button
       type="button"
       className={cn(
-        'bg-card rounded-md shadow-sm border border-border overflow-hidden relative group',
-        'focus-visible:outline-none focus-visible:ring-2 ring-offset-background focus-visible:ring-ring focus-visible:ring-offset-1',
+        'group relative overflow-hidden rounded-md border border-border bg-card shadow-sm',
+        'ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
         className,
         onClick && 'cursor-pointer',
       )}
@@ -133,21 +133,21 @@ function SearchCard({
       />
       <div
         className={cn(
-          'absolute top-0 left-0 right-0 bottom-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center',
-          isAdded && 'opacity-100 bg-black/50',
+          'absolute top-0 right-0 bottom-0 left-0 flex items-center justify-center bg-black/20 opacity-0 transition-all duration-300 group-hover:opacity-100',
+          isAdded && 'bg-black/50 opacity-100',
         )}
       >
-        {isAdded && <CheckIcon className="size-10 text-purple-500 text-primary" />}
+        {isAdded && <CheckIcon className="size-10 text-primary text-purple-500" />}
       </div>
       {!!movie.releaseDate && (
-        <p className="absolute top-1 left-1 px-3 py-1 bg-black rounded-full text-white select-none">
+        <p className="absolute top-1 left-1 select-none rounded-full bg-black px-3 py-1 text-white">
           {format(new Date(movie.releaseDate), 'y')}
         </p>
       )}
       <VoteAverage className="absolute top-1 right-1" voteAverage={movie.voteAverage} />
-      <div className="flex flex-col absolute bottom-0 left-0 right-0">
-        <div className="bg-gradient-to-b from-transparent to-black/70 h-8" />
-        <h3 className="font-semibold text-lg bg-black/70 px-2 pb-2">{movie.title}</h3>
+      <div className="absolute right-0 bottom-0 left-0 flex flex-col">
+        <div className="h-8 bg-gradient-to-b from-transparent to-black/70" />
+        <h3 className="bg-black/70 px-2 pb-2 font-semibold text-lg">{movie.title}</h3>
       </div>
     </button>
   );

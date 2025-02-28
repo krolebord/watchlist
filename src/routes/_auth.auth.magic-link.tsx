@@ -36,10 +36,10 @@ export const Route = createFileRoute('/_auth/auth/magic-link')({
 function RouteComponent() {
   const { status } = Route.useLoaderData();
   return (
-    <div className="w-full flex-col flex items-center gap-6 justify-center">
+    <div className="flex w-full flex-col items-center justify-center gap-6">
       {status === 'invalid-token' && (
         <>
-          <h1 className="text-3xl font-bold">Magic Link Login</h1>
+          <h1 className="font-bold text-3xl">Magic Link Login</h1>
           <p className="text-red-500 text-sm">Seems like your login link has expired</p>
           <Button asChild>
             <Link to="/login">Send me a new link again</Link>
@@ -87,9 +87,9 @@ function Onboarding() {
 
   return (
     <>
-      <h1 className="text-3xl font-bold">Welcome!</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="flex max-w-sm w-full flex-col gap-4 p-4 rounded-md">
-        <div className="flex flex-col gap-1 justify-between min-h-16 text-center">
+      <h1 className="font-bold text-3xl">Welcome!</h1>
+      <form onSubmit={handleSubmit(onSubmit)} className="flex w-full max-w-sm flex-col gap-4 rounded-md p-4">
+        <div className="flex min-h-16 flex-col justify-between gap-1 text-center">
           <Input {...register('name')} placeholder="Your name" autoFocus className="text-center" />
           <p className="text-red-500 text-sm">{errors.name?.message}</p>
         </div>

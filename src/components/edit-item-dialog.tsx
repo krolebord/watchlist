@@ -229,7 +229,7 @@ export function EditItemDialog({ items, listId }: EditItemDialogProps) {
                           disabled={(date) => date > new Date()}
                           initialFocus
                         />
-                        <div className="p-3 border-t border-border">
+                        <div className="border-border border-t p-3">
                           <Button
                             variant="ghost"
                             className="w-full justify-center"

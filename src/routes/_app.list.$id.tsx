@@ -80,14 +80,14 @@ function RouteComponent() {
         <UserAvatarDropdown />
       </AppHeader>
       <AddItemButton />
-      <div className="flex items-center justify-center top-0 sticky z-10 bg-background/80 pb-2 backdrop-blur-md">
-        <div className="items-center gap-x-4 w-full justify-start px-4 pt-2 max-w-7xl grid grid-cols-[1fr_auto] sm:grid-cols-[auto_1fr_auto] gap-y-1">
+      <div className="sticky top-0 z-10 flex items-center justify-center bg-background/80 pb-2 backdrop-blur-md">
+        <div className="grid w-full max-w-7xl grid-cols-[1fr_auto] items-center justify-start gap-x-4 gap-y-1 px-4 pt-2 sm:grid-cols-[auto_1fr_auto]">
           <SortingHeader />
           <SearchInput className="max-sm:col-span-2 max-sm:row-start-2 sm:max-w-52" />
           <HeaderMenu />
         </div>
       </div>
-      <div className="w-full flex flex-col items-center">
+      <div className="flex w-full flex-col items-center">
         <ItemsList />
       </div>
     </ListStoreProvider>
@@ -296,7 +296,7 @@ function AddItemButton() {
 
   return (
     <AddMovieDialog listId={listId} alreadyAddedItems={alreadyAddedItems} asChild>
-      <Button variant="default" size="icon" className="size-10 rounded-full fixed bottom-4 right-4 z-50">
+      <Button variant="default" size="icon" className="fixed right-4 bottom-4 z-50 size-10 rounded-full">
         <PlusIcon className="!size-6" />
       </Button>
     </AddMovieDialog>
@@ -338,7 +338,7 @@ function ItemsList() {
     <>
       {items && <EditItemDialog items={items} listId={listId} />}
       <div
-        className="w-full flex flex-wrap justify-center md:grid md:grid-cols-2 xl:grid-cols-3 gap-4 px-4 pt-2 pb-20 max-w-7xl"
+        className="flex w-full max-w-7xl flex-wrap justify-center gap-4 px-4 pt-2 pb-20 md:grid md:grid-cols-2 xl:grid-cols-3"
         ref={animateRef}
       >
         {orderedItems.map((item) => (

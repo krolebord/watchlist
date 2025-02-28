@@ -39,10 +39,10 @@ export function ListSettingsSheet({ listId, children, asChild }: ListSettingsShe
           <ListSettingsForm list={listDetails.data} />
         ) : (
           <div className="flex flex-col gap-2">
-            <Skeleton className="w-full h-8" />
-            <Skeleton className="w-2/3 h-8" />
-            <Skeleton className="w-1/3 h-8" />
-            <Skeleton className="w-1/2 h-8" />
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-2/3" />
+            <Skeleton className="h-8 w-1/3" />
+            <Skeleton className="h-8 w-1/2" />
           </div>
         )}
       </SheetContent>
@@ -55,12 +55,12 @@ type ListSettingsFormProps = {
 };
 function ListSettingsForm({ list }: ListSettingsFormProps) {
   return (
-    <div className="flex flex-col gap-12 justify-between h-full">
+    <div className="flex h-full flex-col justify-between gap-12">
       <div className="flex flex-col gap-12">
         <ListNameForm listId={list.id} name={list.name} />
         <ListUsers listId={list.id} users={list.users} />
       </div>
-      <div className="flex flex-col text-gray-500 pb-6">
+      <div className="flex flex-col pb-6 text-gray-500">
         <p>
           Watched: {list.stats.watchedCount} / {list.stats.count}
         </p>
@@ -119,7 +119,7 @@ function ListNameForm({ listId, name }: ListNameFormProps) {
         type="submit"
         variant="outline"
         disabled={editListMutation.isPending || !isDirty}
-        className="p-0 aspect-square"
+        className="aspect-square p-0"
       >
         {editListMutation.isSuccess && !isDirty ? <CheckIcon className="!size-4" /> : <PenIcon className="!size-4" />}
       </Button>
@@ -191,7 +191,7 @@ function ListUsers({ listId, users }: ListUsersProps) {
           type="submit"
           variant="outline"
           disabled={inviteUserMutation.isPending || !isValid}
-          className="p-0 aspect-square"
+          className="aspect-square p-0"
         >
           {inviteUserMutation.isSuccess && !isDirty ? (
             <CheckIcon className="!size-4" />

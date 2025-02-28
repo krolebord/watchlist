@@ -25,7 +25,7 @@ export const EmailLayout = (props: EmailLayoutProps) => {
       <Html>
         <Head />
         <Preview>{preview ?? heading}</Preview>
-        <Body className="bg-black text-white font-sans py-8">
+        <Body className="bg-black py-8 font-sans text-white">
           <Container className="text-center">
             <Heading>{heading}</Heading>
             {children}
@@ -39,7 +39,7 @@ export const EmailLayout = (props: EmailLayoutProps) => {
 EmailLayout.Button = ({ ...props }: ButtonProps) => {
   return (
     <Button
-      className="bg-purple-800 rounded-md px-8 border-2 border-purple-900 border-solid py-2 text-lg text-white"
+      className="rounded-md border-2 border-purple-900 border-solid bg-purple-800 px-8 py-2 text-lg text-white"
       {...props}
     />
   );

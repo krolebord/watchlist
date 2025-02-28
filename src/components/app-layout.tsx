@@ -21,7 +21,7 @@ type AppHeaderProps = {
 export function AppHeader({ children, className }: AppHeaderProps) {
   return (
     <header
-      className={cn('bg-card border-b border-border justify-between items-center h-14 flex px-4 gap-2', className)}
+      className={cn('flex h-14 items-center justify-between gap-2 border-border border-b bg-card px-4', className)}
     >
       {children}
     </header>
@@ -43,7 +43,7 @@ export function ProjectSelector({ showCreate = true }: ProjectSelectorProps) {
     <DropdownMenu>
       <DropdownMenuTrigger
         disabled={lists.isLoading || lists.isError || lists.data?.length === 0}
-        className="w-56 text-start flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
+        className="flex h-10 w-56 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-start text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
       >
         {selectedList?.name ?? 'Available lists...'}
       </DropdownMenuTrigger>
@@ -80,7 +80,7 @@ export function UserAvatarDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar className="select-none cursor-pointer">
+        <Avatar className="cursor-pointer select-none">
           <AvatarFallback>{user.name?.slice(0, 2)}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
