@@ -15,6 +15,7 @@ import {
   MinusIcon,
   PencilIcon,
   PlusIcon,
+  RefreshCwIcon,
   SkullIcon,
   ThumbsUpIcon,
   TrashIcon,
@@ -115,6 +116,11 @@ export function ListItemCard({ item, listId }: { item: ListItem; listId: string 
                     <Clock4Icon className="!size-4" /> {formatDuration(item.duration)}
                   </span>
                 )}
+                {item.type === 'tv' && !!item.episodeCount && (
+                  <span className="flex items-center gap-1">
+                    <HashIcon className="!size-4" /> {item.episodeCount}
+                  </span>
+                )}
               </p>
             </div>
             <div className="flex gap-2 justify-end">
@@ -157,6 +163,7 @@ function ListItemMenuContent({ type, item }: ListItemMenuContentProps) {
       <DeleteMenuItem item={item} />
       <SetWatchedMenuItem item={item} />
       <SetPriorityMenuItem item={item} />
+      <ReindexMenuItem item={item} />
     </DynamicMenuContent>
   );
 }
@@ -275,6 +282,27 @@ function SetWatchedMenuItem({ item }: ItemMenuActioProps) {
     >
       <CheckIcon />
       Mark as watched
+    </DynamicMenuItem>
+  );
+}
+
+function ReindexMenuItem({ item }: ItemMenuActioProps) {
+  const listId = useListId();
+  const utils = trpc.useUtils();
+
+  const reindexItemMutation = trpc.list.reindexItem.useMutation({
+    onSuccess: () => {
+      utils.list.getItems.invalidate({ listId });
+    },
+  });
+
+  return (
+    <DynamicMenuItem
+      disabled={reindexItemMutation.isPending}
+      onClick={() => reindexItemMutation.mutate({ listId, itemId: item.id })}
+    >
+      <RefreshCwIcon />
+      Reindex
     </DynamicMenuItem>
   );
 }

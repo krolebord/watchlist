@@ -138,6 +138,50 @@ export const listRouter = router({
       return { itemId };
     }),
 
+  reindexItem: listProcedure.input(z.object({ itemId: z.string() })).mutation(async ({ input, ctx }) => {
+    const [item] = await ctx.db
+      .select({
+        id: mainSchema.listItemsTable.id,
+        tmdbId: mainSchema.listItemsTable.tmdbId,
+        type: mainSchema.listItemsTable.type,
+      })
+      .from(mainSchema.listItemsTable)
+      .where(eq(mainSchema.listItemsTable.id, input.itemId));
+
+    if (!item) {
+      throw new TRPCError({ code: 'NOT_FOUND' });
+    }
+
+    if (!item.tmdbId) {
+      return { status: 'skipped' as const };
+    }
+
+    const meta = await getItemMetadata({
+      tmdb: ctx.tmdb,
+      tmdbId: item.tmdbId,
+      type: item.type,
+    });
+
+    if (!meta.tmdb) {
+      return { status: 'skipped' as const };
+    }
+
+    await ctx.db
+      .update(mainSchema.listItemsTable)
+      .set({
+        title: meta.tmdb.title,
+        overview: meta.tmdb.overview,
+        duration: meta.tmdb.duration,
+        episodeCount: meta.tmdb.episodeCount,
+        rating: meta.tmdb.rating,
+        releaseDate: meta.tmdb.releaseDate,
+        posterUrl: meta.tmdb.posterUrl,
+      })
+      .where(eq(mainSchema.listItemsTable.id, input.itemId));
+
+    return { status: 'success' as const };
+  }),
+
   removeItem: listProcedure.input(z.object({ itemId: z.string() })).mutation(async ({ input, ctx }) => {
     await ctx.db.delete(mainSchema.listItemsTable).where(eq(mainSchema.listItemsTable.id, input.itemId));
   }),
