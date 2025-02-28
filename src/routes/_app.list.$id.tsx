@@ -65,12 +65,6 @@ function ListSettings() {
   );
 }
 
-export function useListId() {
-  const { id } = useParams({ from: '/_app/list/$id' });
-
-  return id;
-}
-
 function RouteComponent() {
   const listId = useListId();
 
