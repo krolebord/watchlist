@@ -13,6 +13,7 @@ import {
   FlameIcon,
   HashIcon,
   MinusIcon,
+  PencilIcon,
   PlusIcon,
   SkullIcon,
   ThumbsUpIcon,
@@ -152,6 +153,7 @@ function ListItemMenuContent({ type, item }: ListItemMenuContentProps) {
   return (
     <DynamicMenuContent type={type}>
       <ToggleItemSelectionMenuItem item={item} />
+      <EditMenuItem item={item} />
       <DeleteMenuItem item={item} />
       <SetWatchedMenuItem item={item} />
       <SetPriorityMenuItem item={item} />
@@ -378,4 +380,15 @@ export function useIsSelectionMode() {
 
 function useIsRandomizedItem(itemId: string) {
   return useListStore((state) => state.randomizedItem === itemId);
+}
+
+function EditMenuItem({ item }: ItemMenuActioProps) {
+  const setEditItemId = useListStore((state) => state.setEditItemId);
+
+  return (
+    <DynamicMenuItem onClick={() => setEditItemId(item.id)}>
+      <PencilIcon />
+      Edit
+    </DynamicMenuItem>
+  );
 }

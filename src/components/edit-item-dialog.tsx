@@ -1,0 +1,217 @@
+import { trpc } from '@/trpc';
+import type { TrpcOutput } from '@/trpc';
+import { useListStore } from '@/utils/list-store';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { FilmIcon, TvIcon } from 'lucide-react';
+import { useEffect, useMemo } from 'react';
+import { type ControllerRenderProps, useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Button } from './ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form';
+import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Textarea } from './ui/textarea';
+
+type ListItem = TrpcOutput['list']['getItems'][number];
+
+const editItemSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  overview: z.string().optional(),
+  duration: z.coerce.number().int().min(0).optional(),
+  type: z.enum(['movie', 'tv']),
+  episodeCount: z.coerce.number().int().min(0).optional(),
+});
+
+type EditItemFormValues = z.infer<typeof editItemSchema>;
+
+type EditItemDialogProps = {
+  items: ListItem[];
+  listId: string;
+};
+
+export function EditItemDialog({ items, listId }: EditItemDialogProps) {
+  const editItemId = useListStore((state) => state.editItemId);
+  const setEditItemId = useListStore((state) => state.setEditItemId);
+  const utils = trpc.useUtils();
+
+  const item = useMemo(() => items.find((item) => item.id === editItemId), [items, editItemId]);
+
+  const form = useForm<EditItemFormValues>({
+    resolver: zodResolver(editItemSchema),
+    defaultValues: {
+      title: '',
+      overview: '',
+      duration: undefined,
+      type: 'movie',
+      episodeCount: undefined,
+    },
+  });
+
+  useEffect(() => {
+    if (item) {
+      form.reset({
+        title: item.title,
+        overview: item.overview || '',
+        duration: item.duration || undefined,
+        type: item.type || 'movie',
+        episodeCount: item.episodeCount || undefined,
+      });
+    }
+  }, [form, item]);
+
+  const updateItemMutation = trpc.list.updateItem.useMutation({
+    onSuccess: () => {
+      utils.list.getItems.invalidate({ listId });
+      setEditItemId(null);
+    },
+  });
+
+  const onSubmit = (values: EditItemFormValues) => {
+    if (!editItemId) return;
+
+    updateItemMutation.mutate({
+      listId,
+      itemId: editItemId,
+      title: values.title,
+      overview: values.overview,
+      duration: values.duration,
+      type: values.type,
+      episodeCount: values.episodeCount,
+    });
+  };
+
+  const type = form.watch('type');
+
+  return (
+    <Dialog open={!!editItemId} onOpenChange={(open) => !open && setEditItemId(null)}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit Item</DialogTitle>
+        </DialogHeader>
+        {item && (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }: { field: ControllerRenderProps<EditItemFormValues, 'type'> }) => (
+                  <FormItem>
+                    <FormLabel>Type</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="movie" className="flex items-center gap-2">
+                          <span className="flex items-center gap-2">
+                            <FilmIcon className="size-4" />
+                            <span>Movie</span>
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="tv" className="flex items-center gap-2">
+                          <span className="flex items-center gap-2">
+                            <TvIcon className="size-4" />
+                            <span>TV Show</span>
+                          </span>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }: { field: ControllerRenderProps<EditItemFormValues, 'title'> }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="overview"
+                render={({ field }: { field: ControllerRenderProps<EditItemFormValues, 'overview'> }) => (
+                  <FormItem>
+                    <FormLabel>Overview</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Overview" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="duration"
+                render={({ field }: { field: ControllerRenderProps<EditItemFormValues, 'duration'> }) => (
+                  <FormItem>
+                    <FormLabel>Duration (minutes)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="Duration"
+                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) => {
+                          const value = e.target.value === '' ? undefined : Number.parseInt(e.target.value, 10);
+                          field.onChange(value);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {type === 'tv' && (
+                <FormField
+                  control={form.control}
+                  name="episodeCount"
+                  render={({ field }: { field: ControllerRenderProps<EditItemFormValues, 'episodeCount'> }) => (
+                    <FormItem>
+                      <FormLabel>Number of Episodes</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Episodes"
+                          {...field}
+                          value={field.value || ''}
+                          onChange={(e) => {
+                            const value = e.target.value === '' ? undefined : Number.parseInt(e.target.value, 10);
+                            field.onChange(value);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditItemId(null)}
+                  disabled={updateItemMutation.isPending}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={updateItemMutation.isPending}>
+                  Save
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}

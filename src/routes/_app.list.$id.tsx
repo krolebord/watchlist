@@ -1,5 +1,6 @@
 import { AddMovieDialog } from '@/components/add-movie-dialog';
 import { AppHeader, ProjectSelector, UserAvatarDropdown } from '@/components/app-layout';
+import { EditItemDialog } from '@/components/edit-item-dialog';
 import { ListItemCard, priorityColors, useIsSelectionMode } from '@/components/list-item';
 import { ListSettingsSheet } from '@/components/list-settings-sheet';
 import { Button } from '@/components/ui/button';
@@ -334,13 +335,16 @@ function ItemsList() {
   const [animateRef] = useAutoAnimate();
 
   return (
-    <div
-      className="w-full flex flex-wrap justify-center md:grid md:grid-cols-2 xl:grid-cols-3 gap-4 px-4 pt-2 pb-20 max-w-7xl"
-      ref={animateRef}
-    >
-      {orderedItems.map((item) => (
-        <ListItemCard key={item.id} item={item} listId={listId} />
-      ))}
-    </div>
+    <>
+      {items && <EditItemDialog items={items} listId={listId} />}
+      <div
+        className="w-full flex flex-wrap justify-center md:grid md:grid-cols-2 xl:grid-cols-3 gap-4 px-4 pt-2 pb-20 max-w-7xl"
+        ref={animateRef}
+      >
+        {orderedItems.map((item) => (
+          <ListItemCard key={item.id} item={item} listId={listId} />
+        ))}
+      </div>
+    </>
   );
 }

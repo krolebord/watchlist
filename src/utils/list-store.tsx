@@ -13,6 +13,7 @@ const createListStore = ({ listId }: ListStoreProps) =>
         listId,
         selectedItems: [] as string[],
         randomizedItem: null as string | null,
+        editItemId: null as string | null,
 
         searchQuery: '',
       },
@@ -31,6 +32,8 @@ const createListStore = ({ listId }: ListStoreProps) =>
             randomizedItem: state.selectedItems[Math.floor(Math.random() * state.selectedItems.length)],
           })),
         clearRandomizedItem: () => set({ randomizedItem: null }),
+
+        setEditItemId: (itemId: string | null) => set({ editItemId: itemId }),
 
         setSearchQuery: (query: string) => set({ searchQuery: query }),
       }),

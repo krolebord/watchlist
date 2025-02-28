@@ -166,4 +166,28 @@ export const listRouter = router({
 
     return items;
   }),
+
+  updateItem: listProcedure
+    .input(
+      z.object({
+        itemId: z.string(),
+        title: z.string().min(1).optional(),
+        overview: z.string().optional(),
+        duration: z.number().int().min(0).optional(),
+        type: z.enum(['movie', 'tv']).optional(),
+        episodeCount: z.number().int().min(0).optional(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      await ctx.db
+        .update(mainSchema.listItemsTable)
+        .set({
+          ...(input.title ? { title: input.title } : {}),
+          ...(input.overview ? { overview: input.overview } : {}),
+          ...(input.duration ? { duration: input.duration } : {}),
+          ...(input.type ? { type: input.type } : {}),
+          ...(input.episodeCount ? { episodeCount: input.episodeCount } : {}),
+        })
+        .where(eq(mainSchema.listItemsTable.id, input.itemId));
+    }),
 });
