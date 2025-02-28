@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import {
   Clock4Icon,
   EllipsisVerticalIcon,
+  EyeIcon,
   EyeOffIcon,
   FlameIcon,
   HashIcon,
@@ -105,7 +106,7 @@ export function ListItemCard({ item, listId }: { item: ListItem; listId: string 
               >
                 {item.title}
               </a>
-              <p className="text-sm text-muted-foreground flex gap-4">
+              <p className="text-sm text-muted-foreground flex gap-y-2 gap-x-4 flex-wrap">
                 {!!item.releaseDate && (
                   <span className="flex items-center gap-1">
                     <CalendarIcon className="!size-4" /> {format(new Date(item.releaseDate), 'y')}
@@ -119,6 +120,11 @@ export function ListItemCard({ item, listId }: { item: ListItem; listId: string 
                 {item.type === 'tv' && !!item.episodeCount && (
                   <span className="flex items-center gap-1">
                     <HashIcon className="!size-4" /> {item.episodeCount}
+                  </span>
+                )}
+                {isWatched && !!item.watchedAt && (
+                  <span className="flex items-center gap-1">
+                    <EyeIcon className="!size-4" /> {format(item.watchedAt, 'd MMM y')}
                   </span>
                 )}
               </p>
