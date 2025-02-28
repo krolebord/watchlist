@@ -1,3 +1,4 @@
+import { getPriorityLabel } from '@/components/list-item';
 import type { TrpcOutput } from '@/trpc';
 import { useSearch } from '@tanstack/react-router';
 import { useCallback } from 'react';
@@ -8,10 +9,11 @@ import { useListStore } from './list-store';
 export const itemsFilterSchema = z.object({
   sortBy: z.enum(['duration', 'rating', 'dateAdded', 'priority']).default('dateAdded'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  priority: z.enum(['high', 'normal', 'low', 'any']).default('any'),
 });
 
 export function useSortedAndFilteredListItemsSelector() {
-  const { sortBy, sortOrder } = useSearch({ from: '/_app/list/$id' });
+  const { sortBy, sortOrder, priority } = useSearch({ from: '/_app/list/$id' });
 
   const randomizedItem = useListStore((x) => x.randomizedItem);
   const searchQuery = useListStore((x) => x.searchQuery);
@@ -25,6 +27,7 @@ export function useSortedAndFilteredListItemsSelector() {
       return R.pipe(
         items,
         R.filter((x) => (!searchQuery ? x.title.toLowerCase().includes(searchQuery.toLowerCase()) : true)),
+        R.filter((x) => priority === 'any' || getPriorityLabel(x.priority) === priority),
         R.sortBy(
           [(x) => (x.id === randomizedItem ? -1 : 1), 'asc'],
           [(x) => (x.watchedAt ? 1 : 0), 'asc'],
@@ -49,6 +52,6 @@ export function useSortedAndFilteredListItemsSelector() {
         ),
       );
     },
-    [sortBy, sortOrder, searchQuery, randomizedItem],
+    [sortBy, sortOrder, searchQuery, randomizedItem, priority],
   );
 }

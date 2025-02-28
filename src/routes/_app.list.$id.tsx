@@ -1,6 +1,6 @@
 import { AddMovieDialog } from '@/components/add-movie-dialog';
 import { AppHeader, ProjectSelector, UserAvatarDropdown } from '@/components/app-layout';
-import { ListItemCard, useIsSelectionMode } from '@/components/list-item';
+import { ListItemCard, priorityColors, useIsSelectionMode } from '@/components/list-item';
 import { ListSettingsSheet } from '@/components/list-settings-sheet';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,9 +14,10 @@ import { trpc } from '@/trpc';
 import { cn } from '@/utils/cn';
 import { lastOpenedList } from '@/utils/last-opened-list';
 import { ListStoreProvider, useListStore } from '@/utils/list-store';
+import { useListId } from '@/utils/use-list-id';
 import { itemsFilterSchema, useSortedAndFilteredListItemsSelector } from '@/utils/use-list-items';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
-import { Link, createFileRoute, useParams, useSearch } from '@tanstack/react-router';
+import { Link, createFileRoute, useSearch } from '@tanstack/react-router';
 import { zodValidator } from '@tanstack/zod-adapter';
 import {
   ArrowDownIcon,
@@ -220,7 +221,51 @@ function SortingHeader({ className }: { className?: string }) {
           {sortOrderIcon[sortOrder]}
         </Link>
       </Button>
+      <FilterButton />
     </div>
+  );
+}
+
+function FilterButton() {
+  const { priority } = useSearch({ from: '/_app/list/$id' });
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          size="icon"
+          className={priority === 'any' ? undefined : priorityColors[priority].text}
+        >
+          {priority === 'any' ? <HashIcon /> : priorityColors[priority].icon}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem asChild>
+          <Link to="." search={(prev) => ({ ...prev, priority: 'high' })} className={priorityColors.high.text}>
+            {priorityColors.high.icon}
+            High
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="." search={(prev) => ({ ...prev, priority: 'normal' })} className={priorityColors.normal.text}>
+            {priorityColors.normal.icon}
+            Normal
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="." search={(prev) => ({ ...prev, priority: 'low' })} className={priorityColors.low.text}>
+            {priorityColors.low.icon}
+            Low
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="." search={(prev) => ({ ...prev, priority: 'any' })}>
+            <HashIcon /> Any
+          </Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

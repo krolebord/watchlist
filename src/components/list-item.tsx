@@ -1,10 +1,10 @@
 import { trpc } from '@/trpc';
 
-import { useListId } from '@/routes/_app.list.$id';
 import type { TrpcOutput } from '@/trpc';
 import { cn } from '@/utils/cn';
 import { formatDuration } from '@/utils/format-duration';
 import { useListStore } from '@/utils/list-store';
+import { useListId } from '@/utils/use-list-id';
 import { format } from 'date-fns';
 import {
   Clock4Icon,
@@ -318,7 +318,7 @@ function SetPriorityMenuItem({ item }: ItemMenuActioProps) {
   );
 }
 
-function getPriorityLabel(priority: number) {
+export function getPriorityLabel(priority: number) {
   if (priority === 0) return 'normal' as const;
   if (priority > 0) return 'high' as const;
   return 'low' as const;
@@ -330,7 +330,7 @@ function getPriorityValue(priority: string) {
   return 0;
 }
 
-const priorityColors = {
+export const priorityColors = {
   high: {
     bg: 'bg-orange-500',
     border: 'border-orange-500',
