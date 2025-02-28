@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import { type ExtractState, createStore, useStore } from 'zustand';
 import { combine } from 'zustand/middleware';
 
@@ -43,7 +43,7 @@ type ListStore = ReturnType<typeof createListStore>;
 const ListStoreContext = createContext<ListStore>(null!);
 
 export function ListStoreProvider({ children, listId }: { children: React.ReactNode } & ListStoreProps) {
-  const [listStore] = useState(() => createListStore({ listId }));
+  const listStore = useMemo(() => createListStore({ listId }), [listId]);
   return <ListStoreContext.Provider value={listStore}>{children}</ListStoreContext.Provider>;
 }
 
