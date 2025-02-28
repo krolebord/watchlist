@@ -1,6 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import { and, count, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
+import { getItemMetadata } from '../../utils/item-metadata';
 import { mainSchema } from '../db';
 import { listProcedure, protectedProcedure, router } from '../trpc';
 import { sendMagicLinkEmail } from './auth.router';
@@ -106,51 +107,36 @@ export const listRouter = router({
     return await sendMagicLinkEmail(ctx, { email: input.email, listId: input.listId });
   }),
 
-  addTMDBMovie: listProcedure.input(z.object({ tmdbId: z.number() })).mutation(async ({ input, ctx }) => {
-    const movie = await ctx.tmdb.movies.details(input.tmdbId, ['keywords']);
+  addTMDBItem: listProcedure
+    .input(z.object({ tmdbId: z.number(), type: z.enum(['movie', 'tv']) }))
+    .mutation(async ({ input, ctx }) => {
+      const meta = await getItemMetadata({
+        tmdb: ctx.tmdb,
+        tmdbId: input.tmdbId,
+        type: input.type,
+      });
 
-    if (!movie) {
-      throw new TRPCError({ code: 'NOT_FOUND' });
-    }
+      if (!meta.tmdb) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
 
-    const itemId = ctx.createId();
-    await ctx.db.insert(mainSchema.listItemsTable).values({
-      id: itemId,
-      listId: input.listId,
-      tmdbId: input.tmdbId,
-      title: movie.title,
-      overview: movie.overview,
-      duration: movie.runtime,
-      rating: Math.round(movie.vote_average * 10),
-      releaseDate: movie.release_date ? new Date(movie.release_date) : null,
-      posterUrl: `https://image.tmdb.org/t/p/w300${movie.poster_path ?? movie.backdrop_path}`,
-    });
+      const itemId = ctx.createId();
+      await ctx.db.insert(mainSchema.listItemsTable).values({
+        id: itemId,
+        listId: input.listId,
+        type: input.type,
+        tmdbId: input.tmdbId,
+        title: meta.tmdb.title,
+        overview: meta.tmdb.overview,
+        duration: meta.tmdb.duration,
+        episodeCount: meta.tmdb.episodeCount,
+        rating: meta.tmdb.rating,
+        releaseDate: meta.tmdb.releaseDate,
+        posterUrl: meta.tmdb.posterUrl,
+      });
 
-    return { itemId };
-  }),
-
-  addTMDBTvShow: listProcedure.input(z.object({ tmdbId: z.number() })).mutation(async ({ input, ctx }) => {
-    const show = await ctx.tmdb.tvShows.details(input.tmdbId, ['keywords']);
-
-    if (!show) {
-      throw new TRPCError({ code: 'NOT_FOUND' });
-    }
-
-    const itemId = ctx.createId();
-    await ctx.db.insert(mainSchema.listItemsTable).values({
-      id: itemId,
-      listId: input.listId,
-      tmdbId: input.tmdbId,
-      title: show.name,
-      overview: show.overview,
-      duration: show.episode_run_time[0] * show.number_of_episodes,
-      rating: Math.round(show.vote_average * 10),
-      releaseDate: show.first_air_date ? new Date(show.first_air_date) : null,
-      posterUrl: `https://image.tmdb.org/t/p/w300${show.poster_path ?? show.backdrop_path}`,
-    });
-
-    return { itemId };
-  }),
+      return { itemId };
+    }),
 
   removeItem: listProcedure.input(z.object({ itemId: z.string() })).mutation(async ({ input, ctx }) => {
     await ctx.db.delete(mainSchema.listItemsTable).where(eq(mainSchema.listItemsTable.id, input.itemId));

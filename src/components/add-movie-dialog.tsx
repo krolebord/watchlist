@@ -40,12 +40,7 @@ export function AddMovieDialog({ listId, asChild, children, alreadyAddedItems }:
   const searchItems = searchQuery ? data : [];
 
   const utils = trpc.useUtils();
-  const addMovie = trpc.list.addTMDBMovie.useMutation({
-    onSuccess: () => {
-      utils.list.getItems.invalidate({ listId });
-    },
-  });
-  const addTvShow = trpc.list.addTMDBTvShow.useMutation({
+  const addItem = trpc.list.addTMDBItem.useMutation({
     onSuccess: () => {
       utils.list.getItems.invalidate({ listId });
     },
@@ -53,10 +48,10 @@ export function AddMovieDialog({ listId, asChild, children, alreadyAddedItems }:
 
   const handleAddMovie = (movie: Exclude<typeof searchItems, undefined>[number], isKeyboard: boolean) => {
     if (movie.type === 'movie') {
-      addMovie.mutate({ listId, tmdbId: movie.tmdbId });
+      addItem.mutate({ listId, tmdbId: movie.tmdbId, type: 'movie' });
       setAddedItems([...addedItems, movie.tmdbId]);
     } else {
-      addTvShow.mutate({ listId, tmdbId: movie.tmdbId });
+      addItem.mutate({ listId, tmdbId: movie.tmdbId, type: 'tv' });
       setAddedItems([...addedItems, movie.tmdbId]);
     }
 
