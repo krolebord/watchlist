@@ -1,15 +1,15 @@
 import { createId } from '@paralleldrive/cuid2';
 import { TRPCError, initTRPC } from '@trpc/server';
 import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
-import { and } from 'drizzle-orm';
-import { eq } from 'drizzle-orm';
 import superjson from 'superjson';
 import { TMDB } from 'tmdb-ts';
 import { z } from 'zod';
 import { EmailService } from '../emails/emails';
+import { type ListEvent, broadcastListEvent } from '../list/list-durable-object';
 import { getSessionId, getValidUserSession } from '../utils/auth';
+import { checkListAccess } from '../utils/list-access';
 import { ServerTimings } from '../utils/server-timings';
-import { createDb, mainSchema } from './db';
+import { createDb } from './db';
 
 export async function createServices({ env, req }: { env: Env; req: Request }) {
   const serverTimings = new ServerTimings();
@@ -23,7 +23,12 @@ export async function createServices({ env, req }: { env: Env; req: Request }) {
     sessionId ? await getValidUserSession(db, sessionId) : null,
   );
 
-  return { serverTimings, emailService, db, tmdb, createId, time, userSession };
+  const listEvents = {
+    broadcast: (listId: string, event: ListEvent, options?: { except?: string[] }) =>
+      broadcastListEvent(env.LIST_DO, listId, event, options),
+  };
+
+  return { serverTimings, emailService, db, tmdb, createId, time, userSession, listEvents };
 }
 
 export function createContext({
@@ -71,16 +76,9 @@ export const listProcedure = protectedProcedure.input(z.object({ listId: z.strin
   const userId = opts.ctx.userSession.user.id;
   const listId = opts.input.listId;
 
-  const list = await opts.ctx.db
-    .select({
-      listId: mainSchema.usersToListsTable.listId,
-      userId: mainSchema.usersToListsTable.userId,
-    })
-    .from(mainSchema.usersToListsTable)
-    .where(and(eq(mainSchema.usersToListsTable.userId, userId), eq(mainSchema.usersToListsTable.listId, listId)))
-    .limit(1);
+  const hasAccess = await checkListAccess(opts.ctx.db, listId, userId);
 
-  if (list.length === 0) {
+  if (!hasAccess) {
     throw new TRPCError({ code: 'NOT_FOUND' });
   }
 

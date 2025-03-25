@@ -180,19 +180,20 @@ type ItemMenuActioProps = {
 
 type Utils = ReturnType<typeof trpc.useUtils>;
 
-function optimisticallyUpdateItems(utils: Utils, listId: string, updateItems: (items: ListItem[]) => ListItem[]) {
-  utils.list.getLists.cancel();
+export function optimisticallyUpdateItems(
+  utils: Utils,
+  listId: string,
+  updateItems: (items: ListItem[]) => ListItem[],
+) {
   const previousItems = utils.list.getItems.getData({ listId });
   utils.list.getItems.setData({ listId }, (old) => {
-    if (!old) return old;
-
-    return updateItems(old);
+    return updateItems(old ?? []);
   });
 
   return { previousItems };
 }
 
-function optimisticallyUpdateItem(
+export function optimisticallyUpdateItem(
   utils: Utils,
   listId: string,
   itemId: string,

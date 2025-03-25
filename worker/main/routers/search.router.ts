@@ -4,7 +4,7 @@ import { publicProcedure, router } from '../trpc';
 
 export const searchRouter = router({
   findMovie: publicProcedure.input(z.object({ q: z.string() })).query(async ({ input, ctx }) => {
-    const results = (await ctx.tmdb.search.multi({ query: input.q })).results;
+    const results = (await ctx.tmdb.search.multi({ query: input.q, include_adult: false })).results;
     return results
       .filter((result) => result.media_type === 'movie' || result.media_type === 'tv')
       .filter((result) => result.vote_count > 5)

@@ -1,8 +1,15 @@
 import { AddMovieDialog } from '@/components/add-movie-dialog';
 import { AppHeader, ProjectSelector, UserAvatarDropdown } from '@/components/app-layout';
 import { EditItemDialog } from '@/components/edit-item-dialog';
-import { ListItemCard, priorityColors, useIsSelectionMode } from '@/components/list-item';
+import {
+  ListItemCard,
+  optimisticallyUpdateItem,
+  optimisticallyUpdateItems,
+  priorityColors,
+  useIsSelectionMode,
+} from '@/components/list-item';
 import { ListSettingsSheet } from '@/components/list-settings-sheet';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,12 +18,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 import { trpc } from '@/trpc';
 import { cn } from '@/utils/cn';
 import { lastOpenedList } from '@/utils/last-opened-list';
+import { ListEventsProvider, useListEvent } from '@/utils/list-events';
 import { ListStoreProvider, useListStore } from '@/utils/list-store';
 import { useListId } from '@/utils/use-list-id';
 import { itemsFilterSchema, useSortedAndFilteredListItemsSelector } from '@/utils/use-list-items';
+import { useUser } from '@/utils/use-user';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { Link, createFileRoute, useSearch } from '@tanstack/react-router';
 import { zodValidator } from '@tanstack/zod-adapter';
@@ -35,19 +45,22 @@ import {
   SquareDashedMousePointerIcon,
   StarIcon,
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { z } from 'zod';
 
 export const Route = createFileRoute('/_app/list/$id')({
   component: RouteComponent,
   validateSearch: zodValidator(itemsFilterSchema),
   loaderDeps: () => ({}),
+  shouldReload: false,
   loader: async ({ params, context }) => {
     lastOpenedList.set(params.id);
+
     await Promise.all([
       context.trpc.list.getItems.prefetch({ listId: params.id }),
       context.trpc.list.getLists.prefetch(),
     ]);
+
     return {
       listId: params.id,
     };
@@ -69,28 +82,50 @@ function ListSettings() {
 
 function RouteComponent() {
   const listId = useListId();
+  const user = useUser();
 
   return (
-    <ListStoreProvider listId={listId}>
-      <AppHeader>
-        <div className="flex items-center gap-2">
-          <ProjectSelector />
-          <ListSettings />
+    <ListEventsProvider listId={listId} sessionId={user.sessionId}>
+      <ListStoreProvider listId={listId}>
+        <AppHeader>
+          <div className="flex items-center gap-2">
+            <ProjectSelector />
+            <ListSettings />
+          </div>
+          <ListUsers />
+        </AppHeader>
+        <AddItemButton />
+        <div className="sticky top-0 z-10 flex items-center justify-center bg-background/80 pb-2 backdrop-blur-md">
+          <div className="grid w-full max-w-7xl grid-cols-[1fr_auto] items-center justify-start gap-x-4 gap-y-1 px-4 pt-2 sm:grid-cols-[auto_1fr_auto]">
+            <SortingHeader />
+            <SearchInput className="max-sm:col-span-2 max-sm:row-start-2 sm:max-w-52" />
+            <HeaderMenu />
+          </div>
         </div>
-        <UserAvatarDropdown />
-      </AppHeader>
-      <AddItemButton />
-      <div className="sticky top-0 z-10 flex items-center justify-center bg-background/80 pb-2 backdrop-blur-md">
-        <div className="grid w-full max-w-7xl grid-cols-[1fr_auto] items-center justify-start gap-x-4 gap-y-1 px-4 pt-2 sm:grid-cols-[auto_1fr_auto]">
-          <SortingHeader />
-          <SearchInput className="max-sm:col-span-2 max-sm:row-start-2 sm:max-w-52" />
-          <HeaderMenu />
+        <div className="flex w-full flex-col items-center">
+          <ItemsList />
         </div>
-      </div>
-      <div className="flex w-full flex-col items-center">
-        <ItemsList />
-      </div>
-    </ListStoreProvider>
+      </ListStoreProvider>
+    </ListEventsProvider>
+  );
+}
+
+function ListUsers() {
+  const user = useUser();
+  const [connectedUsers, setConnectedUsers] = useState<{ id: string; name: string }[]>([]);
+  useListEvent('users-updated', ({ users }) => {
+    setConnectedUsers(users.filter((x) => x.id !== user.id));
+  });
+  return (
+    <div className="flex items-center gap-2">
+      {connectedUsers.map((user) => (
+        <Avatar key={user.id}>
+          <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
+        </Avatar>
+      ))}
+      {connectedUsers.length > 0 && <Separator orientation="vertical" className="h-8" />}
+      <UserAvatarDropdown />
+    </div>
   );
 }
 
@@ -139,12 +174,8 @@ function HeaderMenu({ className }: { className?: string }) {
   const clearRandomizedItem = useListStore((state) => state.clearRandomizedItem);
 
   const listId = useListId();
-  const { data: allItems = [] } = trpc.list.getItems.useQuery(
-    { listId },
-    {
-      select: (data) => data.map((item) => item.id),
-    },
-  );
+  const { data: listItems = [] } = trpc.list.getItems.useQuery({ listId });
+  const allItems = useMemo(() => listItems.map((x) => x.id), [listItems]);
 
   return (
     <DropdownMenu>
@@ -287,12 +318,8 @@ function SearchInput({ className }: { className?: string }) {
 function AddItemButton() {
   const listId = useListId();
 
-  const { data: alreadyAddedItems = [] } = trpc.list.getItems.useQuery(
-    { listId },
-    {
-      select: (data) => data.map((item) => item.tmdbId).filter((id) => id !== null),
-    },
-  );
+  const { data: listItems = [] } = trpc.list.getItems.useQuery({ listId });
+  const alreadyAddedItems = useMemo(() => listItems.map((x) => x.tmdbId).filter((id) => id !== null), [listItems]);
 
   return (
     <AddMovieDialog listId={listId} alreadyAddedItems={alreadyAddedItems} asChild>
@@ -305,34 +332,13 @@ function AddItemButton() {
 
 function ItemsList() {
   const listId = useListId();
-  const { data: items } = trpc.list.getItems.useQuery(
-    { listId },
-    {
-      select: useSortedAndFilteredListItemsSelector(),
-    },
-  );
+  const { data: items } = trpc.list.getItems.useQuery({ listId });
 
-  const selectedRandomizedItem = useListStore((state) => state.randomizedItem);
-  const searchQuery = useListStore((state) => state.searchQuery);
-  const orderedItems = useMemo(() => {
-    if (!items) {
-      return items ?? [];
-    }
-
-    const newItems = searchQuery
-      ? [...items.filter((item) => item.title.toLowerCase().includes(searchQuery.toLowerCase()))]
-      : [...items];
-
-    if (selectedRandomizedItem) {
-      const selectedItemIndex = items.findIndex((item) => item.id === selectedRandomizedItem);
-      newItems.splice(selectedItemIndex, 1);
-      newItems.unshift(items[selectedItemIndex]);
-    }
-
-    return newItems;
-  }, [items, selectedRandomizedItem, searchQuery]);
+  const orderedItems = useSortedAndFilteredListItemsSelector(items ?? []);
 
   const [animateRef] = useAutoAnimate();
+
+  useListEvents({ listId });
 
   return (
     <>
@@ -347,4 +353,23 @@ function ItemsList() {
       </div>
     </>
   );
+}
+
+function useListEvents({ listId }: { listId: string }) {
+  const utils = trpc.useUtils();
+
+  useListEvent('item-created', ({ item }) => {
+    optimisticallyUpdateItems(utils, listId, (items) => [item, ...items]);
+  });
+
+  useListEvent('item-updated', ({ item }) => {
+    optimisticallyUpdateItem(utils, listId, item.id, (oldItem) => ({
+      ...oldItem,
+      ...item,
+    }));
+  });
+
+  useListEvent('item-removed', ({ itemId }) => {
+    optimisticallyUpdateItems(utils, listId, (items) => items.filter((i) => i.id !== itemId));
+  });
 }

@@ -2,6 +2,7 @@ import { type TrpcOutput, trpc } from '@/trpc';
 import { cn } from '@/utils/cn';
 import { useThrottle } from '@/utils/use-throttle';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
+import { Description } from '@radix-ui/react-dialog';
 import { keepPreviousData } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { CheckIcon, XIcon } from 'lucide-react';
@@ -69,6 +70,7 @@ export function AddMovieDialog({ listId, asChild, children, alreadyAddedItems }:
         className="flex h-screen max-h-[calc(100dvh)] w-screen flex-col content-start items-start justify-start p-2 sm:h-[80vh] sm:max-w-[480px] sm:p-4 md:max-w-[700px] lg:max-w-[900px]"
       >
         <DialogTitle hidden>Add a movie</DialogTitle>
+        <Description hidden>Add a movie to your list</Description>
         <div className="flex w-full flex-row items-center gap-3">
           <Input
             placeholder="Search for a movie"

@@ -114,7 +114,16 @@ export const authRouter = router({
     }),
 
   getUser: publicProcedure.query(({ ctx }) => {
-    return ctx.userSession?.user ?? null;
+    const session = ctx.userSession;
+
+    if (!session) {
+      return null;
+    }
+
+    return {
+      ...session.user,
+      sessionId: session.id,
+    };
   }),
 
   logout: publicProcedure.mutation(({ ctx }) => {

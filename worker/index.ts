@@ -1,4 +1,5 @@
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
+import { isListWsRequest, routeListWsRequest } from './list/list-durable-object';
 import { mainRouter } from './main/router';
 import { createContext, createServices } from './main/trpc';
 
@@ -28,6 +29,12 @@ export default {
         },
       });
     }
+
+    const listId = await isListWsRequest(req);
+    if (listId) {
+      return await routeListWsRequest(listId, req, env);
+    }
+
     return env.ASSETS.fetch(req);
   },
 } satisfies ExportedHandler<Env>;
@@ -35,4 +42,4 @@ export default {
 export { ListDurableObject } from './list/list-durable-object';
 
 export type { MainRouter } from './main/router';
-export type { ListRouter } from './list/router';
+export type { ListEvent } from './list/list-durable-object';

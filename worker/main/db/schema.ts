@@ -82,9 +82,7 @@ export const usersToListsTable = sqliteTable(
       .notNull()
       .references(() => listsTable.id, { onDelete: 'cascade' }),
   }),
-  (f) => ([
-    primaryKey({ columns: [f.userId, f.listId] })
-  ]),
+  (f) => [primaryKey({ columns: [f.userId, f.listId] })],
 );
 export const usersToListsRelations = relations(usersToListsTable, ({ one }) => ({
   user: one(usersTable, {
@@ -140,9 +138,7 @@ export const listItemTagsTable = sqliteTable(
       .notNull()
       .references(() => listItemsTable.id, { onDelete: 'cascade' }),
   }),
-  (f) => ([
-    uniqueIndex('unique_tag').on(f.listItemId, f.name)
-  ]),
+  (f) => [uniqueIndex('unique_tag').on(f.listItemId, f.name)],
 );
 
 export const listItemTagsRelations = relations(listItemTagsTable, ({ one }) => ({

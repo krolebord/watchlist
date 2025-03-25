@@ -6,6 +6,23 @@ import { mainSchema } from '../db';
 import { listProcedure, protectedProcedure, router } from '../trpc';
 import { sendMagicLinkEmail } from './auth.router';
 
+const safeItemSelect = {
+  id: mainSchema.listItemsTable.id,
+  type: mainSchema.listItemsTable.type,
+  tmdbId: mainSchema.listItemsTable.tmdbId,
+  title: mainSchema.listItemsTable.title,
+  overview: mainSchema.listItemsTable.overview,
+  duration: mainSchema.listItemsTable.duration,
+  episodeCount: mainSchema.listItemsTable.episodeCount,
+  rating: mainSchema.listItemsTable.rating,
+  releaseDate: mainSchema.listItemsTable.releaseDate,
+  posterUrl: mainSchema.listItemsTable.posterUrl,
+  watchedAt: mainSchema.listItemsTable.watchedAt,
+  priority: mainSchema.listItemsTable.priority,
+
+  createdAt: mainSchema.listItemsTable.createdAt,
+};
+
 export const listRouter = router({
   getLists: protectedProcedure.query(async ({ ctx }) => {
     const user = ctx.userSession.user;
@@ -121,19 +138,33 @@ export const listRouter = router({
       }
 
       const itemId = ctx.createId();
-      await ctx.db.insert(mainSchema.listItemsTable).values({
-        id: itemId,
-        listId: input.listId,
-        type: input.type,
-        tmdbId: input.tmdbId,
-        title: meta.tmdb.title,
-        overview: meta.tmdb.overview,
-        duration: meta.tmdb.duration,
-        episodeCount: meta.tmdb.episodeCount,
-        rating: meta.tmdb.rating,
-        releaseDate: meta.tmdb.releaseDate,
-        posterUrl: meta.tmdb.posterUrl,
-      });
+      const [item] = await ctx.db
+        .insert(mainSchema.listItemsTable)
+        .values({
+          id: itemId,
+          listId: input.listId,
+          type: input.type,
+          tmdbId: input.tmdbId,
+          title: meta.tmdb.title,
+          overview: meta.tmdb.overview,
+          duration: meta.tmdb.duration,
+          episodeCount: meta.tmdb.episodeCount,
+          rating: meta.tmdb.rating,
+          releaseDate: meta.tmdb.releaseDate,
+          posterUrl: meta.tmdb.posterUrl,
+        })
+        .returning(safeItemSelect);
+
+      await ctx.listEvents.broadcast(
+        input.listId,
+        {
+          type: 'item-created',
+          item,
+        },
+        {
+          except: [ctx.userSession.user.id],
+        },
+      );
 
       return { itemId };
     }),
@@ -184,29 +215,64 @@ export const listRouter = router({
 
   removeItem: listProcedure.input(z.object({ itemId: z.string() })).mutation(async ({ input, ctx }) => {
     await ctx.db.delete(mainSchema.listItemsTable).where(eq(mainSchema.listItemsTable.id, input.itemId));
+
+    await ctx.listEvents.broadcast(
+      input.listId,
+      {
+        type: 'item-removed',
+        itemId: input.itemId,
+      },
+      {
+        except: [ctx.userSession.user.id],
+      },
+    );
   }),
 
   setWatched: listProcedure
     .input(z.object({ itemId: z.string(), watched: z.boolean() }))
     .mutation(async ({ input, ctx }) => {
-      await ctx.db
+      const [item] = await ctx.db
         .update(mainSchema.listItemsTable)
         .set({ watchedAt: input.watched ? new Date() : null })
-        .where(eq(mainSchema.listItemsTable.id, input.itemId));
+        .where(eq(mainSchema.listItemsTable.id, input.itemId))
+        .returning(safeItemSelect);
+
+      await ctx.listEvents.broadcast(
+        input.listId,
+        {
+          type: 'item-updated',
+          item,
+        },
+        {
+          except: [ctx.userSession.user.id],
+        },
+      );
     }),
 
   setPriority: listProcedure
     .input(z.object({ itemId: z.string(), priority: z.enum(['low', 'normal', 'high']) }))
     .mutation(async ({ input, ctx }) => {
-      await ctx.db
+      const [item] = await ctx.db
         .update(mainSchema.listItemsTable)
         .set({ priority: input.priority === 'low' ? -1 : input.priority === 'normal' ? 0 : 1 })
-        .where(eq(mainSchema.listItemsTable.id, input.itemId));
+        .where(eq(mainSchema.listItemsTable.id, input.itemId))
+        .returning(safeItemSelect);
+
+      await ctx.listEvents.broadcast(
+        input.listId,
+        {
+          type: 'item-updated',
+          item,
+        },
+        {
+          except: [ctx.userSession.user.id],
+        },
+      );
     }),
 
   getItems: listProcedure.query(async ({ ctx, input }) => {
     const f = mainSchema.listItemsTable;
-    const items = await ctx.db.select().from(f).where(eq(f.listId, input.listId));
+    const items = await ctx.db.select(safeItemSelect).from(f).where(eq(f.listId, input.listId));
 
     return items;
   }),
@@ -224,7 +290,7 @@ export const listRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      await ctx.db
+      const [item] = await ctx.db
         .update(mainSchema.listItemsTable)
         .set({
           ...(input.title ? { title: input.title } : {}),
@@ -234,6 +300,18 @@ export const listRouter = router({
           ...(input.episodeCount ? { episodeCount: input.episodeCount } : {}),
           ...(input.watchedAt !== undefined ? { watchedAt: input.watchedAt } : {}),
         })
-        .where(eq(mainSchema.listItemsTable.id, input.itemId));
+        .where(eq(mainSchema.listItemsTable.id, input.itemId))
+        .returning(safeItemSelect);
+
+      await ctx.listEvents.broadcast(
+        input.listId,
+        {
+          type: 'item-updated',
+          item,
+        },
+        {
+          except: [ctx.userSession.user.id],
+        },
+      );
     }),
 });
