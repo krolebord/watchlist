@@ -1,7 +1,8 @@
+import { generateTOTP } from '@oslojs/otp';
 import { createId } from '@paralleldrive/cuid2';
 import { serialize } from 'cookie';
-import { addDays, addMinutes } from 'date-fns';
-import { secondsInDay } from 'date-fns/constants';
+import { addDays, addSeconds } from 'date-fns';
+import { secondsInDay, secondsInHour } from 'date-fns/constants';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import { sessionCookieName } from '../../utils/auth';
@@ -186,21 +187,32 @@ type MagicLinkOptions = {
   email: string;
   listId?: string;
 };
+
+const verificationTTLInSeconds = secondsInHour * 24;
+
 export async function sendMagicLinkEmail(ctx: Context, { email, listId }: MagicLinkOptions) {
-  const verificationCode = crypto.randomUUID();
+  const secret = new Uint8Array(20);
+  crypto.getRandomValues(secret);
+  const verificationCode = generateTOTP(secret, verificationTTLInSeconds, 6);
+
   await ctx.db.insert(mainSchema.verificationsTable).values({
     id: createId(),
     targetType: 'email',
     target: email,
     listId,
     token: verificationCode,
-    expiredAt: addMinutes(new Date(), 60),
+    expiredAt: addSeconds(new Date(), verificationTTLInSeconds),
   });
 
   const result = await ctx.emailService.sendMagicLinkEmail({
     to: email,
+    code: verificationCode,
     link: `${ctx.env.APP_URL}/auth/magic-link?email=${email}&token=${verificationCode}`,
   });
+
+  if (ctx.env.MODE !== 'production') {
+    console.log('Magic link sent to', email, verificationCode);
+  }
 
   return { success: !!result.data, error: result.error };
 }

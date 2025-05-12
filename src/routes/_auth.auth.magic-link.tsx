@@ -8,8 +8,8 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 const magicLinkSchema = z.object({
-  email: z.string().email().default(''),
-  token: z.string().default(''),
+  email: z.string().email().optional(),
+  token: z.string().optional(),
 });
 
 export const Route = createFileRoute('/_auth/auth/magic-link')({
@@ -17,9 +17,14 @@ export const Route = createFileRoute('/_auth/auth/magic-link')({
   validateSearch: zodValidator(magicLinkSchema),
   loaderDeps: ({ search }) => ({ email: search.email, token: search.token }),
   loader: async ({ deps, context: { trpcClient } }) => {
-    if (!deps.email || !deps.token) {
-      return { status: 'invalid-token' as const };
+    if (!deps.email) {
+      throw redirect({ to: '/login', replace: true });
     }
+
+    if (!deps.token) {
+      return { status: 'missing-token' as const };
+    }
+
     const result = await trpcClient.auth.useMagicLink.mutate({ email: deps.email, token: deps.token });
 
     if (result.status === 'success') {
@@ -39,15 +44,72 @@ function RouteComponent() {
     <div className="flex w-full flex-col items-center justify-center gap-6">
       {status === 'invalid-token' && (
         <>
-          <h1 className="font-bold text-3xl">Magic Link Login</h1>
-          <p className="text-red-500 text-sm">Seems like your login link has expired</p>
+          <h1 className="font-bold text-3xl">Email Login</h1>
+          <p className="text-red-500 text-sm">Seems like your login code has expired</p>
           <Button asChild>
-            <Link to="/login">Send me a new link again</Link>
+            <Link to="/login">Send me a new code again</Link>
           </Button>
         </>
       )}
-      {status === 'user-not-found' && <Onboarding />}
+      {status === 'user-not-found' ? <Onboarding /> : <CodeLogin />}
     </div>
+  );
+}
+
+const codeLoginSchema = z.object({
+  token: z.string(),
+});
+
+type CodeLoginFormSchema = z.infer<typeof codeLoginSchema>;
+
+function CodeLogin() {
+  const { email } = Route.useLoaderDeps();
+  const navigate = useNavigate();
+
+  const loginMutation = trpc.auth.useMagicLink.useMutation({
+    onSuccess: (data) => {
+      if (data.status === 'success') {
+        if (data.listId) {
+          navigate({ to: '/list/$id', params: { id: data.listId }, replace: true });
+          return;
+        }
+
+        navigate({ to: '/', replace: true });
+      }
+    },
+  });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CodeLoginFormSchema>({
+    resolver: zodResolver(codeLoginSchema),
+  });
+
+  const onSubmit = (data: CodeLoginFormSchema) => {
+    if (!email) {
+      return;
+    }
+
+    loginMutation.mutate({ email, token: data.token });
+  };
+
+  return (
+    <>
+      <h1 className="font-bold text-3xl">Email Login</h1>
+      <form onSubmit={handleSubmit(onSubmit)} className="flex w-full max-w-sm flex-col gap-4 rounded-md p-4">
+        <div className="flex min-h-16 flex-col justify-between gap-1 text-center">
+          <Input {...register('token')} placeholder="Your code" autoFocus className="text-center" />
+          <p className="text-red-500 text-sm">{errors.token?.message ?? loginMutation.data?.status}</p>
+        </div>
+        <Button type="submit" disabled={loginMutation.isPending}>
+          Submit
+        </Button>
+        <Button asChild variant="outline">
+          <Link to="/login">Send me a new code again</Link>
+        </Button>
+      </form>
+    </>
   );
 }
 
@@ -82,6 +144,10 @@ function Onboarding() {
   });
 
   const onSubmit = (data: RegisterFormSchema) => {
+    if (!email || !token) {
+      return;
+    }
+
     registerMutation.mutate({ email, token, name: data.name });
   };
 
