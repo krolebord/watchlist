@@ -178,7 +178,7 @@ function setSessionCookie(ctx: Context, sessionId: string) {
       httpOnly: true,
       sameSite: 'strict',
       secure: ctx.env.MODE === 'production',
-      maxAge: secondsInDay * 30,
+      maxAge: secondsInDay * 30 * 6,
     }),
   );
 }
