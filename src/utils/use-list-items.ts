@@ -25,7 +25,7 @@ export function useSortedAndFilteredListItemsSelector(items: TrpcOutput['list'][
 
     return R.pipe(
       items,
-      R.filter((x) => (!searchQuery ? x.title.toLowerCase().includes(searchQuery.toLowerCase()) : true)),
+      R.filter((x) => (searchQuery ? x.title.toLowerCase().includes(searchQuery.toLowerCase()) : true)),
       R.filter((x) => priority === 'any' || getPriorityLabel(x.priority) === priority),
       R.sortBy(
         [(x) => (x.id === randomizedItem ? -1 : 1), 'asc'],
