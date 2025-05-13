@@ -125,25 +125,52 @@ export const listItemsTable = sqliteTable('list_items', (x) => ({
 }));
 
 export const listItemsRelations = relations(listItemsTable, ({ many }) => ({
-  tags: many(listItemTagsTable),
+  tags: many(listTagsToItemsTable),
 }));
 
-export const listItemTagsTable = sqliteTable(
-  'list_item_tags',
+export const listTagsTable = sqliteTable(
+  'list_tags',
   (x) => ({
     id: x.text().primaryKey(),
     name: x.text().notNull(),
+    listId: x
+      .text('list_id')
+      .notNull()
+      .references(() => listsTable.id, { onDelete: 'cascade' }),
+  }),
+  (f) => [uniqueIndex('unique_list_tag').on(f.listId, f.name)],
+);
+
+export const listTagsRelations = relations(listTagsTable, ({ one, many }) => ({
+  list: one(listsTable, {
+    fields: [listTagsTable.listId],
+    references: [listsTable.id],
+  }),
+  items: many(listTagsToItemsTable),
+}));
+
+export const listTagsToItemsTable = sqliteTable(
+  'list_tags_to_items',
+  (x) => ({
+    listTagId: x
+      .text('list_tag_id')
+      .notNull()
+      .references(() => listTagsTable.id, { onDelete: 'cascade' }),
     listItemId: x
       .text('list_item_id')
       .notNull()
       .references(() => listItemsTable.id, { onDelete: 'cascade' }),
   }),
-  (f) => [uniqueIndex('unique_tag').on(f.listItemId, f.name)],
+  (f) => [primaryKey({ columns: [f.listTagId, f.listItemId] })],
 );
 
-export const listItemTagsRelations = relations(listItemTagsTable, ({ one }) => ({
+export const listTagsToItemsRelations = relations(listTagsToItemsTable, ({ one }) => ({
+  listTag: one(listTagsTable, {
+    fields: [listTagsToItemsTable.listTagId],
+    references: [listTagsTable.id],
+  }),
   listItem: one(listItemsTable, {
-    fields: [listItemTagsTable.listItemId],
+    fields: [listTagsToItemsTable.listItemId],
     references: [listItemsTable.id],
   }),
 }));

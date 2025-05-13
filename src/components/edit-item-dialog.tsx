@@ -35,6 +35,60 @@ type EditItemDialogProps = {
   listId: string;
 };
 
+type ItemTagsProps = {
+  listId: string;
+  itemId: string;
+};
+
+function ItemTags({ listId, itemId }: ItemTagsProps) {
+  const utils = trpc.useUtils();
+  const tags = trpc.list.getTags.useQuery({ listId });
+  const itemTags = trpc.list.getItemTags.useQuery({ listId, itemId });
+  const setItemTagsMutation = trpc.list.setItemTags.useMutation({
+    onSuccess: () => {
+      utils.list.getItemTags.invalidate({ listId, itemId });
+    },
+  });
+
+  const selectedTagIds = new Set(itemTags.data?.map((tag) => tag.id));
+
+  const toggleTag = (tagId: string) => {
+    const newTagIds = new Set(selectedTagIds);
+    if (newTagIds.has(tagId)) {
+      newTagIds.delete(tagId);
+    } else {
+      newTagIds.add(tagId);
+    }
+    setItemTagsMutation.mutate({ listId, itemId, tagIds: Array.from(newTagIds) });
+  };
+
+  return (
+    <div>
+      <p className="mb-2 font-medium">Tags</p>
+      <div className="flex flex-wrap gap-2">
+        {tags.data?.map((tag) => {
+          const isSelected = selectedTagIds.has(tag.id);
+          return (
+            <button
+              key={tag.id}
+              type="button"
+              onClick={() => toggleTag(tag.id)}
+              className={cn(
+                'flex items-center gap-2 rounded-full border px-3 py-1 text-sm transition-colors',
+                isSelected
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border bg-card hover:bg-accent',
+              )}
+            >
+              {tag.name}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function EditItemDialog({ items, listId }: EditItemDialogProps) {
   const editItemId = useListStore((state) => state.editItemId);
   const setEditItemId = useListStore((state) => state.setEditItemId);
@@ -244,6 +298,7 @@ export function EditItemDialog({ items, listId }: EditItemDialogProps) {
                   </FormItem>
                 )}
               />
+              <ItemTags listId={listId} itemId={item.id} />
               <DialogFooter>
                 <Button
                   type="button"

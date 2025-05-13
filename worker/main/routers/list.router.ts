@@ -2,7 +2,7 @@ import { TRPCError } from '@trpc/server';
 import { and, count, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { getItemMetadata } from '../../utils/item-metadata';
-import { mainSchema } from '../db';
+import { type MainDb, mainSchema } from '../db';
 import { listProcedure, protectedProcedure, router } from '../trpc';
 import { sendMagicLinkEmail } from './auth.router';
 
@@ -127,13 +127,16 @@ export const listRouter = router({
   addTMDBItem: listProcedure
     .input(z.object({ tmdbId: z.number(), type: z.enum(['movie', 'tv']) }))
     .mutation(async ({ input, ctx }) => {
+      const tags = await getListTags(input.listId, ctx.db);
       const meta = await getItemMetadata({
         tmdb: ctx.tmdb,
+        ai: ctx.env.AI,
         tmdbId: input.tmdbId,
         type: input.type,
+        tags,
       });
 
-      if (!meta.tmdb) {
+      if (!meta) {
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
 
@@ -187,13 +190,16 @@ export const listRouter = router({
       return { status: 'skipped' as const };
     }
 
+    const tags = await getListTags(input.listId, ctx.db);
     const meta = await getItemMetadata({
       tmdb: ctx.tmdb,
+      ai: ctx.env.AI,
       tmdbId: item.tmdbId,
       type: item.type,
+      tags,
     });
 
-    if (!meta.tmdb) {
+    if (!meta) {
       return { status: 'skipped' as const };
     }
 
@@ -209,6 +215,15 @@ export const listRouter = router({
         posterUrl: meta.tmdb.posterUrl,
       })
       .where(eq(mainSchema.listItemsTable.id, input.itemId));
+
+    if (meta.ai && meta.ai.tags.length > 0) {
+      await ctx.db
+        .delete(mainSchema.listTagsToItemsTable)
+        .where(eq(mainSchema.listTagsToItemsTable.listItemId, input.itemId));
+      await ctx.db
+        .insert(mainSchema.listTagsToItemsTable)
+        .values(meta.ai.tags.map((t) => ({ listTagId: t.id, listItemId: input.itemId })));
+    }
 
     return { status: 'success' as const };
   }),
@@ -272,9 +287,43 @@ export const listRouter = router({
 
   getItems: listProcedure.query(async ({ ctx, input }) => {
     const f = mainSchema.listItemsTable;
-    const items = await ctx.db.select(safeItemSelect).from(f).where(eq(f.listId, input.listId));
 
-    return items;
+    const items = await ctx.db.query.listItemsTable.findMany({
+      where: eq(f.listId, input.listId),
+      columns: {
+        id: true,
+        type: true,
+        tmdbId: true,
+        title: true,
+        overview: true,
+        duration: true,
+        episodeCount: true,
+        rating: true,
+        releaseDate: true,
+        posterUrl: true,
+        watchedAt: true,
+        priority: true,
+        createdAt: true,
+      },
+      with: {
+        tags: {
+          columns: {},
+          with: {
+            listTag: {
+              columns: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return items.map((item) => ({
+      ...item,
+      tags: item.tags.map((t) => t.listTag),
+    }));
   }),
 
   updateItem: listProcedure
@@ -314,4 +363,92 @@ export const listRouter = router({
         },
       );
     }),
+
+  getTags: listProcedure.query(async ({ input, ctx }) => {
+    const tags = await ctx.db.query.listTagsTable.findMany({
+      where: eq(mainSchema.listTagsTable.listId, input.listId),
+      columns: {
+        id: true,
+        name: true,
+      },
+    });
+
+    return tags;
+  }),
+
+  createTag: listProcedure.input(z.object({ name: z.string().min(1) })).mutation(async ({ input, ctx }) => {
+    const tagId = ctx.createId();
+    const [tag] = await ctx.db
+      .insert(mainSchema.listTagsTable)
+      .values({
+        id: tagId,
+        name: input.name,
+        listId: input.listId,
+      })
+      .returning();
+
+    return { tagId: tag.id };
+  }),
+
+  updateTag: listProcedure
+    .input(z.object({ tagId: z.string(), name: z.string().min(1) }))
+    .mutation(async ({ input, ctx }) => {
+      await ctx.db
+        .update(mainSchema.listTagsTable)
+        .set({ name: input.name })
+        .where(and(eq(mainSchema.listTagsTable.id, input.tagId), eq(mainSchema.listTagsTable.listId, input.listId)));
+    }),
+
+  deleteTag: listProcedure.input(z.object({ tagId: z.string() })).mutation(async ({ input, ctx }) => {
+    await ctx.db
+      .delete(mainSchema.listTagsTable)
+      .where(and(eq(mainSchema.listTagsTable.id, input.tagId), eq(mainSchema.listTagsTable.listId, input.listId)));
+  }),
+
+  getItemTags: listProcedure.input(z.object({ itemId: z.string() })).query(async ({ input, ctx }) => {
+    const tags = await ctx.db.query.listTagsToItemsTable.findMany({
+      where: eq(mainSchema.listTagsToItemsTable.listItemId, input.itemId),
+      with: {
+        listTag: {
+          columns: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    return tags.map((t) => t.listTag);
+  }),
+
+  setItemTags: listProcedure
+    .input(z.object({ itemId: z.string(), tagIds: z.array(z.string()) }))
+    .mutation(async ({ input, ctx }) => {
+      // Delete existing tags
+      await ctx.db
+        .delete(mainSchema.listTagsToItemsTable)
+        .where(eq(mainSchema.listTagsToItemsTable.listItemId, input.itemId));
+
+      // Add new tags
+      if (input.tagIds.length > 0) {
+        await ctx.db.insert(mainSchema.listTagsToItemsTable).values(
+          input.tagIds.map((tagId) => ({
+            listTagId: tagId,
+            listItemId: input.itemId,
+          })),
+        );
+      }
+    }),
 });
+
+async function getListTags(listId: string, db: MainDb) {
+  const tags = await db
+    .select({
+      id: mainSchema.listTagsTable.id,
+      name: mainSchema.listTagsTable.name,
+    })
+    .from(mainSchema.listTagsTable)
+    .where(eq(mainSchema.listTagsTable.listId, listId));
+
+  return tags;
+}

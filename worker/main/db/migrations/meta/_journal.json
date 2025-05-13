@@ -43,6 +43,13 @@
       "when": 1740739975549,
       "tag": "0005_add-reindexing",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1747082425948,
+      "tag": "0006_regular_captain_midlands",
+      "breakpoints": true
     }
   ]
 }

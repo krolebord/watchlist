@@ -12,6 +12,7 @@ interface Env {
   APP_URL: string;
   LIST_DO: DurableObjectNamespace<import('./worker/index').ListDurableObject>;
   MAIN_DB: D1Database;
+  AI: Ai;
   METADATA: { id: string; tag: string };
   ASSETS: Fetcher;
 }

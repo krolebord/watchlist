@@ -31,6 +31,9 @@ class_name = "ListDurableObject"
 id = "d66e3b0d7bb04642b3f33a1f72c9ae79"
 binding = "LIST_KV"
 
+[ai]
+binding = "AI"
+
 [[d1_databases]]
 binding = "MAIN_DB"
 database_name = "watchlist-main"

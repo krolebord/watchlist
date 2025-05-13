@@ -51,7 +51,7 @@ export function ListItemCard({ item, listId }: { item: ListItem; listId: string 
       <ContextMenuTrigger asChild>
         <div
           className={cn(
-            'group relative grid w-full grid-cols-3 overflow-hidden rounded-md border border-border bg-card shadow-sm',
+            'group relative grid w-full grid-cols-3 items-center overflow-hidden rounded-md border border-border bg-card shadow-sm',
             isRandomizedItem && 'border-primary',
           )}
         >
@@ -128,6 +128,15 @@ export function ListItemCard({ item, listId }: { item: ListItem; listId: string 
                   </span>
                 )}
               </p>
+              {item.tags && item.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {item.tags.map((tag) => (
+                    <span key={tag.id} className="rounded-full border border-border bg-card px-2 py-0.5 text-xs">
+                      {tag.name}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="flex justify-end gap-2">
               {!isWatched && (

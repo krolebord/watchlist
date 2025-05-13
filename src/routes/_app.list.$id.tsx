@@ -359,7 +359,13 @@ function useListEvents({ listId }: { listId: string }) {
   const utils = trpc.useUtils();
 
   useListEvent('item-created', ({ item }) => {
-    optimisticallyUpdateItems(utils, listId, (items) => [item, ...items]);
+    optimisticallyUpdateItems(utils, listId, (items) => [
+      {
+        ...item,
+        tags: [],
+      },
+      ...items,
+    ]);
   });
 
   useListEvent('item-updated', ({ item }) => {

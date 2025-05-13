@@ -1,7 +1,7 @@
 import { type TrpcOutput, trpc } from '@/trpc';
 import { formatDuration } from '@/utils/format-duration';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckIcon, MailIcon, PenIcon } from 'lucide-react';
+import { CheckIcon, MailIcon, PenIcon, PlusIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -59,6 +59,7 @@ function ListSettingsForm({ list }: ListSettingsFormProps) {
       <div className="flex flex-col gap-12">
         <ListNameForm listId={list.id} name={list.name} />
         <ListUsers listId={list.id} users={list.users} />
+        <ListTags listId={list.id} tags={[]} />
       </div>
       <div className="flex flex-col pb-6 text-gray-500">
         <p>
@@ -200,6 +201,132 @@ function ListUsers({ listId, users }: ListUsersProps) {
           )}
         </Button>
       </form>
+    </div>
+  );
+}
+
+type ListTagsProps = {
+  listId: string;
+  tags: {
+    id: string;
+    name: string;
+  }[];
+};
+
+function ListTags({ listId }: ListTagsProps) {
+  const utils = trpc.useUtils();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingTagId, setEditingTagId] = useState<string | null>(null);
+
+  const tags = trpc.list.getTags.useQuery({ listId });
+  const createTagMutation = trpc.list.createTag.useMutation({
+    onSuccess: () => {
+      utils.list.getTags.invalidate({ listId });
+    },
+  });
+  const updateTagMutation = trpc.list.updateTag.useMutation({
+    onSuccess: () => {
+      utils.list.getTags.invalidate({ listId });
+      setEditingTagId(null);
+    },
+  });
+  const deleteTagMutation = trpc.list.deleteTag.useMutation({
+    onSuccess: () => {
+      utils.list.getTags.invalidate({ listId });
+    },
+  });
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { isValid },
+  } = useForm<{ name: string }>({
+    resolver: zodResolver(z.object({ name: z.string().min(1) })),
+    defaultValues: {
+      name: '',
+    },
+  });
+
+  const onSubmit = (data: { name: string }) => {
+    createTagMutation.mutate({ listId, name: data.name });
+    reset();
+  };
+
+  const onUpdate = (tagId: string, name: string) => {
+    updateTagMutation.mutate({ listId, tagId, name });
+  };
+
+  const onDelete = (tagId: string) => {
+    deleteTagMutation.mutate({ listId, tagId });
+  };
+
+  return (
+    <div>
+      <p>Tags</p>
+      <div className="h-2" />
+      <div className="flex flex-wrap gap-2">
+        {tags.data?.map((tag) => (
+          <div key={tag.id} className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1">
+            {editingTagId === tag.id ? (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  const name = formData.get('name') as string;
+                  if (name) {
+                    onUpdate(tag.id, name);
+                  }
+                }}
+                className="flex items-center gap-2"
+              >
+                <Input
+                  name="name"
+                  defaultValue={tag.name}
+                  className="h-6 w-24 px-1 py-0"
+                  autoFocus
+                  onBlur={() => setEditingTagId(null)}
+                />
+                <Button type="submit" variant="ghost" size="icon" className="h-6 w-6">
+                  <CheckIcon className="!size-3" />
+                </Button>
+              </form>
+            ) : (
+              <>
+                <span className="cursor-pointer" onClick={() => setEditingTagId(tag.id)}>
+                  {tag.name}
+                </span>
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onDelete(tag.id)}>
+                  <XIcon className="!size-3" />
+                </Button>
+              </>
+            )}
+          </div>
+        ))}
+        {isEditing ? (
+          <form onSubmit={handleSubmit(onSubmit)} className="flex items-center gap-2">
+            <Input
+              {...register('name')}
+              placeholder="Tag name"
+              className="h-8 w-32"
+              autoFocus
+              onBlur={() => {
+                if (!isValid) {
+                  setIsEditing(false);
+                  reset();
+                }
+              }}
+            />
+            <Button type="submit" variant="ghost" size="icon" className="h-8 w-8">
+              <CheckIcon className="!size-4" />
+            </Button>
+          </form>
+        ) : (
+          <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => setIsEditing(true)}>
+            <PlusIcon className="!size-4" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
